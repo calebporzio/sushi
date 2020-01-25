@@ -1,0 +1,24 @@
+{
+    "name": "calebporzio/sushi",
+    "description": "Eloquent's missing \"array\" driver.",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Caleb Porzio",
+            "email": "calebporzio@gmail.com"
+        }
+    ],
+    "require": {
+        "illuminate/database": "~5.8.0|^6.0.0",
+        "illuminate/support": "~5.8.0|^6.0.0",
+        "orchestra/testbench": "^4.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "Sushi\\": "src/"
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^8.5"
+    }
+}
