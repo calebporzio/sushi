@@ -1,7 +1,7 @@
 # Sushi 🍣
 Eloquent's missing "array" driver.
 
-Sometimes you want to use eloquent, but without the database.
+Sometimes you want to use Eloquent, but without the database.
 
 ## Install
 `composer require calebporzio/sushi`
