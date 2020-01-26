@@ -3,8 +3,18 @@ Eloquent's missing "array" driver.
 
 Sometimes you want to use Eloquent, but without the database.
 
+## This Package Is Sponsorware 💰💰💰
+Currently, it is NOT funded. Therefore, it will only be available to people who sponsor me on GitHub.
+
+It will become funded (and become fully open-source), once I have a total of 40 GitHub Sponsors.
+
+Share this link with the world to make this freely available: https://github.com/sponsors/calebporzio
+
 ## Install
-`composer require calebporzio/sushi`
+```
+composer config repositories.sushi '{"type": "github", "url": "https://github.com/calebporzio/sushi"}' --file composer.json
+composer require calebporzio/sushi
+```
 
 ## Use
 
