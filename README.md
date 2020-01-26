@@ -6,7 +6,7 @@ Sometimes you want to use Eloquent, but without dealing with a database.
 ## This Package Is Sponsorware 💰💰💰
 Currently, this package is only available to people who [sponsor me](https://github.com/sponsors/calebporzio) on GitHub.
 
-Once I have a total of 50 GitHub Sponsors, I will make this package fully open source. (27 more new sponsors to go!)
+Once I have a total of 75 GitHub Sponsors, I will make this package fully open source. (52 more new sponsors to go!)
 
 Thanks for the support! ❤️
 
