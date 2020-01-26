@@ -91,5 +91,3 @@ User::with('role')->first();
 
 ## How It Works
 Under the hood, this package creates and caches a SQLite database JUST for this model. It addes a table and populates the rows. If, for whatever reason, it can't cache a .sqlite file, it will default to using an in-memory sqlite database.
-
-SQLite is really fast, and my quick little benchmark with a 200 row model added a .009 second overhead to my application. "That's a number I can live with!" -- Penguins
