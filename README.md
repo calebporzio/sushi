@@ -50,8 +50,8 @@ class Role extends Model
 
     protected $rows = [
         ['id' => 1, 'label' => 'admin'],
-        ['id' => 1, 'label' => 'manager'],
-        ['id' => 1, 'label' => 'user'],
+        ['id' => 2, 'label' => 'manager'],
+        ['id' => 3, 'label' => 'user'],
     ];
 }
 ```
