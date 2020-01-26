@@ -25,11 +25,9 @@ Using this package consists of two steps:
 That's it.
 
 ```php
-use Sushi\Sushi as TheMissingEloquentArrayDriver;
-
 class State extends Model
 {
-    use TheMissingEloquentArrayDriver;
+    use \Sushi\Sushi;
 
     protected $rows = [
         [
