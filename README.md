@@ -1,7 +1,7 @@
 # Sushi 🍣
 Eloquent's missing "array" driver.
 
-Sometimes you want to use Eloquent, but without the database.
+Sometimes you want to use Eloquent, but without dealing with a database.
 
 ## This Package Is Sponsorware 💰💰💰
 Currently, it is NOT funded. Therefore, it will only be available to people who sponsor me on GitHub.
