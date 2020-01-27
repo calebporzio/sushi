@@ -67,11 +67,12 @@ trait Sushi
 
     public function migrate()
     {
-        $rows = $this->rows;
-        $firstRow = $rows[0];
-        $tableName = $this->getTable();
+        $rows = $this->getRows();
 
         throw_unless($rows, new \Exception('Sushi: $rows property not found on model: '.get_class($this)));
+
+        $firstRow = $rows[0];
+        $tableName = $this->getTable();
 
         static::resolveConnection()->getSchemaBuilder()->create($tableName, function ($table) use ($firstRow) {
             foreach ($firstRow as $column => $value) {
@@ -87,5 +88,10 @@ trait Sushi
         });
 
         static::insert($rows);
+    }
+
+    protected function getRows()
+    {
+        return $this->rows;
     }
 }
