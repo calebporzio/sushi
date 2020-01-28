@@ -12,7 +12,6 @@ Thanks for the support! ❤️
 
 ## Install
 ```
-composer config repositories.sushi '{"type": "github", "url": "https://github.com/calebporzio/sushi"}' --file composer.json
 composer require calebporzio/sushi
 ```
 
