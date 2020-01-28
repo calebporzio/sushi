@@ -6,12 +6,6 @@
         {
             "name": "Caleb Porzio",
             "email": "calebporzio@gmail.com"
-        },
-        {
-            "name": "Tom Witkowski",
-            "email": "dev.gummibeer@gmail.com",
-            "homepage": "https://gummibeer.de",
-            "role": "Developer"
         }
     ],
     "require": {
