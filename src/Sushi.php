@@ -5,15 +5,34 @@ namespace Sushi;
 use Illuminate\Database\Connectors\ConnectionFactory;
 use Illuminate\Support\Str;
 
+/**
+ * Trait Sushi
+ *
+ * @package Sushi
+ */
 trait Sushi
 {
+    /**
+     * @var $sushiConnection
+     */
     protected static $sushiConnection;
 
+    /**
+     * Resolve connection.
+     *
+     * @param null $connection
+     * @return mixed
+     */
     public static function resolveConnection($connection = null)
     {
         return static::$sushiConnection;
     }
 
+    /**
+     * Boot.
+     *
+     * @throws \ReflectionException
+     */
     public static function bootSushi()
     {
         $instance = (new static);
@@ -57,6 +76,11 @@ trait Sushi
         }
     }
 
+    /**
+     * Set Sqlite connection.
+     *
+     * @param $database
+     */
     protected static function setSqliteConnection($database)
     {
         static::$sushiConnection = app(ConnectionFactory::class)->make([
@@ -65,6 +89,9 @@ trait Sushi
         ]);
     }
 
+    /**
+     * Migrate.
+     */
     public function migrate()
     {
         $rows = $this->rows;
