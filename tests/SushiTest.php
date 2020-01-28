@@ -91,7 +91,7 @@ class SushiTest extends TestCase
     /** @test */
     public function it_inserts_all_rows()
     {
-        $this->assertEquals(101, Maki::count());
+        $this->assertSame(101, Maki::count());
     }
 
     /** @test */
