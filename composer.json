@@ -6,16 +6,24 @@
         {
             "name": "Caleb Porzio",
             "email": "calebporzio@gmail.com"
+        },
+        {
+            "name": "Tom Witkowski",
+            "email": "dev.gummibeer@gmail.com",
+            "homepage": "https://gummibeer.de",
+            "role": "Developer"
         }
     ],
     "require": {
-        "illuminate/database": "~5.8.0|^6.0.0",
-        "illuminate/support": "~5.8.0|^6.0.0",
-        "illuminate/filesystem": "~5.8.0|^6.0.0"
+        "php": "^7.4",
+        "illuminate/database": "~5.8.0 || ^6.0.0",
+        "illuminate/filesystem": "~5.8.0 || ^6.0.0",
+        "illuminate/support": "~5.8.0 || ^6.0.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "^8.5",
-        "orchestra/testbench": "^4.5"
+        "fzaninotto/faker": "^1.9",
+        "orchestra/testbench": "^4.5",
+        "phpunit/phpunit": "^8.5"
     },
     "autoload": {
         "psr-4": {

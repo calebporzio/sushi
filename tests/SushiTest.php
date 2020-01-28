@@ -2,104 +2,157 @@
 
 namespace Tests;
 
+use Carbon\Carbon;
+use DateTime;
+use Faker\Factory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\File;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Schema\ColumnDefinition;
+use Illuminate\Support\LazyCollection;
 use Orchestra\Testbench\TestCase;
+use Sushi\Sushi;
 
 class SushiTest extends TestCase
 {
-    public function setUp(): void
+    protected function tearDown(): void
     {
-        parent::setUp();
-
-        config(['sushi.cache-path' => $this->cachePath = __DIR__.'/cache']);
-
-        Foo::resetStatics();
-        File::cleanDirectory($this->cachePath);
-    }
-
-    public function tearDown(): void
-    {
-        Foo::resetStatics();
-        File::cleanDirectory($this->cachePath);
+        (new Maki())->getConnection()->getSchemaBuilder()->dropAllTables();
 
         parent::tearDown();
     }
 
     /** @test */
-    function basic_usage()
+    public function it_generates_correct_schema()
     {
-        $this->assertEquals(2, Foo::count());
-        $this->assertEquals('bar', Foo::first()->foo);
-        $this->assertEquals('lob', Foo::whereBob('lob')->first()->bob);
+        $table = new Blueprint('table');
+
+        Maki::getSchema($table, new Maki(), Maki::getRows()->first());
+
+        $columns = collect($table->getColumns());
+
+        $id = $columns->firstWhere('name', 'id');
+        $this->assertEqualsColumnDefinition([
+            'type' => 'bigInteger',
+            'name' => 'id',
+            'autoIncrement' => true,
+            'unsigned' => true,
+        ], $id);
+
+        $name = $columns->firstWhere('name', 'name');
+        $this->assertEqualsColumnDefinition([
+            'type' => 'string',
+            'name' => 'name',
+            'nullable' => true,
+        ], $name);
+
+        $age = $columns->firstWhere('name', 'age');
+        $this->assertEqualsColumnDefinition([
+            'type' => 'integer',
+            'name' => 'age',
+            'nullable' => true,
+        ], $age);
+
+        $price = $columns->firstWhere('name', 'price');
+        $this->assertEqualsColumnDefinition([
+            'type' => 'float',
+            'name' => 'price',
+            'nullable' => true,
+        ], $price);
+
+        $properties = $columns->firstWhere('name', 'properties');
+        $this->assertEqualsColumnDefinition([
+            'type' => 'json',
+            'name' => 'properties',
+            'nullable' => true,
+        ], $properties);
+
+        $publishedAt = $columns->firstWhere('name', 'published_at');
+        $this->assertEqualsColumnDefinition([
+            'type' => 'timestamp',
+            'name' => 'published_at',
+            'nullable' => true,
+        ], $publishedAt);
+
+        $createdAt = $columns->firstWhere('name', 'created_at');
+        $this->assertEqualsColumnDefinition([
+            'type' => 'timestamp',
+            'name' => 'created_at',
+            'nullable' => true,
+        ], $createdAt);
+
+        $updatedAt = $columns->firstWhere('name', 'updated_at');
+        $this->assertEqualsColumnDefinition([
+            'type' => 'timestamp',
+            'name' => 'updated_at',
+            'nullable' => true,
+        ], $updatedAt);
     }
 
     /** @test */
-    function not_adding_rows_property_throws_an_error()
+    public function it_inserts_all_rows()
     {
-        $this->expectExceptionMessage('Sushi: $rows property not found on model: Tests\Bar');
-
-        Bar::count();
+        $this->assertEquals(101, Maki::count());
     }
 
     /** @test */
-    function uses_in_memory_if_the_cache_directory_is_not_writeable_or_not_found()
+    public function it_uses_correct_attributes()
     {
-        config(['sushi.cache-path' => $path = __DIR__.'/non-existant-path']);
+        $model = Maki::whereKey(1)->first();
 
-        Foo::count();
-
-        $this->assertFalse(file_exists($path));
-        $this->assertEquals(':memory:', (new Foo)->getConnection()->getDatabaseName());
+        $this->assertSame(1, $model->id);
+        $this->assertSame('foobar', $model->name);
+        $this->assertSame(10, $model->age);
+        $this->assertSame(9.99, $model->price);
+        $this->assertSame(['lorem', 'ipsum'], $model->properties);
+        $this->assertInstanceOf(DateTime::class, $model->published_at);
+        $this->assertSame('2020-01-25 19:45:30', $model->published_at->format('Y-m-d H:i:s'));
+        $this->assertInstanceOf(DateTime::class, $model->created_at);
+        $this->assertInstanceOf(DateTime::class, $model->updated_at);
     }
 
-    /** @test */
-    function caches_sqlite_file_if_storage_cache_folder_is_available()
+    protected function assertEqualsColumnDefinition(array $expected, $actual)
     {
-        Foo::count();
-
-        $this->assertTrue(file_exists($this->cachePath));
-        $this->assertStringContainsString(
-            'sushi/tests/cache/sushi-tests-foo.sqlite',
-            (new Foo)->getConnection()->getDatabaseName()
-        );
-    }
-
-    /** @test */
-    function uses_same_cache_between_requests()
-    {
-        $this->markTestSkipped('I can\' find a good way to test this right now');
-    }
-
-    /** @test */
-    function use_same_cache_between_requests()
-    {
-        $this->markTestSkipped('I can\' find a good way to test this right now');
+        $this->assertInstanceOf(ColumnDefinition::class, $actual);
+        foreach($expected as $key => $value) {
+            $this->assertSame($value, $actual[$key]);
+        }
     }
 }
 
-class Foo extends Model
+class Maki extends Model
 {
-    use \Sushi\Sushi;
+    use Sushi;
 
-    protected $rows = [
-        ['foo' => 'bar', 'bob' => 'lob'],
-        ['foo' => 'baz', 'bob' => 'law'],
+    protected $guarded = [];
+
+    public $casts = [
+        'age' => 'int',
+        'price' => 'float',
+        'properties' => 'array',
+        'published_at' => 'datetime',
     ];
 
-    public static function resetStatics()
-    {
-        static::setSushiConnection(null);
-        static::clearBootedModels();
-    }
+    protected const ROWS = [
+        ['id' => 1, 'name' => 'foobar', 'age' => 10, 'price' => 9.99, 'properties' => ['lorem', 'ipsum'], 'published_at' => '2020-01-25 19:45:30'],
+        ['id' => 2, 'name' => 'minion', 'age' => 20, 'price' => 19.99, 'properties' => ['minion', 'banana'], 'published_at' => '2020-01-28 08:15:20'],
+    ];
 
-    public static function setSushiConnection($connection)
+    public static function getRows(): LazyCollection
     {
-        static::$sushiConnection = $connection;
-    }
-}
+        $faker = Factory::create();
 
-class Bar extends Model
-{
-    use \Sushi\Sushi;
+        return LazyCollection::range(0, 100)->map(function (int $i) use ($faker): array {
+            $row = self::ROWS[$i] ?? [
+                'name' => $faker->word,
+                'age' => $faker->numberBetween(1, 99),
+                'price' => $faker->randomFloat(2, 1, 1000),
+                'properties' => $faker->words(),
+                'published_at' => $faker->dateTimeThisDecade,
+            ];
+
+            $row['published_at'] = Carbon::make($row['published_at']);
+
+            return $row;
+        });
+    }
 }

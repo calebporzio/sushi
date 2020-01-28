@@ -2,90 +2,91 @@
 
 namespace Sushi;
 
+use DateTime;
 use Illuminate\Database\Connectors\ConnectionFactory;
-use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\SQLiteConnection;
+use Illuminate\Support\Arr;
+use Illuminate\Support\LazyCollection;
 
+/** @mixin Model */
 trait Sushi
 {
-    protected static $sushiConnection;
+    protected static SQLiteConnection $sushiConnection;
 
-    public static function resolveConnection($connection = null)
+    protected static function bootSushi(): void
     {
+        static::migrate();
+    }
+
+    public function getConnection(): SQLiteConnection
+    {
+        static::$sushiConnection ??= $this->getConnectionFactory()->make([
+            'driver' => 'sqlite',
+            'database' => ':memory:',
+        ], 'sushi');
+
         return static::$sushiConnection;
     }
 
-    public static function bootSushi()
+    protected function getConnectionFactory(): ConnectionFactory
     {
-        $instance = (new static);
-        $cacheFileName = 'sushi-'.Str::kebab(str_replace('\\', '', static::class)).'.sqlite';
-        $cacheDirectory = realpath(config('sushi.cache-path', storage_path('framework/cache')));
-        $cachePath = $cacheDirectory.'/'.$cacheFileName;
-        $modelPath = (new \ReflectionClass(static::class))->getFileName();
-
-        $states = [
-            'cache-file-found-and-up-to-date' => function () use ($cachePath) {
-                static::setSqliteConnection($cachePath);
-            },
-            'cache-file-not-found-or-stale' => function () use ($cachePath, $modelPath, $instance) {
-                file_put_contents($cachePath, '');
-
-                static::setSqliteConnection($cachePath);
-
-                $instance->migrate();
-
-                touch($cachePath, filemtime($modelPath));
-            },
-            'no-caching-capabilities' => function () use ($instance) {
-                static::setSqliteConnection(':memory:');
-
-                $instance->migrate();
-            },
-        ];
-
-        switch (true) {
-            case file_exists($cachePath) && filemtime($modelPath) === filemtime($cachePath):
-                $states['cache-file-found-and-up-to-date']();
-                break;
-
-            case file_exists($cacheDirectory) && is_writable($cacheDirectory):
-                $states['cache-file-not-found-or-stale']();
-                break;
-
-            default:
-                $states['no-caching-capabilities']();
-                break;
-        }
+        return app(ConnectionFactory::class);
     }
 
-    protected static function setSqliteConnection($database)
+    public static function migrate(): void
     {
-        static::$sushiConnection = app(ConnectionFactory::class)->make([
-            'driver' => 'sqlite',
-            'database' => $database,
-        ]);
-    }
+        $firstRow = static::getRows()->first();
+        $model = new static();
 
-    public function migrate()
-    {
-        $rows = $this->rows;
-        $firstRow = $rows[0];
-        $tableName = $this->getTable();
-
-        throw_unless($rows, new \Exception('Sushi: $rows property not found on model: '.get_class($this)));
-
-        static::resolveConnection()->getSchemaBuilder()->create($tableName, function ($table) use ($firstRow) {
-            foreach ($firstRow as $column => $value) {
-                if ($column === 'id') {
-                    $table->increments('id');
-                    continue;
-                }
-
-                $type = is_numeric($value) ? 'integer' : 'string';
-
-                $table->{$type}($column);
+        $model->getConnection()->getSchemaBuilder()->create(
+            $model->getTable(),
+            static function (Blueprint $table) use ($model, $firstRow): void {
+                forward_static_call([static::class, 'getSchema'], $table, $model, $firstRow);
             }
-        });
+        );
 
-        static::insert($rows);
+        static::getRows()->each(static function (array $row): void {
+            static::create($row);
+        });
+    }
+
+    public static function getRows(): LazyCollection
+    {
+        return LazyCollection::make(static::ROWS);
+    }
+
+    public static function getSchema(Blueprint $table, Model $model, array $row): void
+    {
+        if ($model->getIncrementing()) {
+            $table->bigIncrements($model->getKeyName());
+        }
+
+        if ($model->usesTimestamps()) {
+            $table->timestamps();
+        }
+
+        if (method_exists(static::class, 'tapSchema')) {
+            forward_static_call([static::class, 'tapSchema'], $table, $model, $row);
+
+            return;
+        }
+
+        foreach (Arr::except($row, ['id', 'created_at', 'updated_at']) as $column => $value) {
+            if (is_int($value)) {
+                $type = 'integer';
+            } elseif (is_float($value)) {
+                $type = 'float';
+            } elseif (is_array($value)) {
+                $type = 'json';
+            } elseif (is_object($value) && $value instanceof DateTime) {
+                $type = 'timestamp';
+            }
+
+            $type = $type ?? 'string';
+
+            $table->{$type}($column)->nullable();
+        }
     }
 }
