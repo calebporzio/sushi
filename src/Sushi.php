@@ -73,7 +73,7 @@ trait Sushi
             return;
         }
 
-        foreach (Arr::except($row, ['id', 'created_at', 'updated_at']) as $column => $value) {
+        foreach (Arr::except($row, [$model->getKeyName(), 'created_at', 'updated_at']) as $column => $value) {
             if (is_int($value)) {
                 $type = 'integer';
             } elseif (is_float($value)) {
