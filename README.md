@@ -94,7 +94,7 @@ $user->load('role');
 User::with('role')->first();
 ```
 
-> Note: There is one cavaet when dealing with Sushi model relationships. The `whereHas` method will NOT work. This is because the two models are spread across two separate databases.
+> Note: There is one caveat when dealing with Sushi model relationships. The `whereHas` method will NOT work. This is because the two models are spread across two separate databases.
 
 ## How It Works
-Under the hood, this package creates and caches a SQLite database JUST for this model. It addes a table and populates the rows. If, for whatever reason, it can't cache a .sqlite file, it will default to using an in-memory sqlite database.
+Under the hood, this package creates and caches a SQLite database JUST for this model. It creates a table and populates the rows. If, for whatever reason, it can't cache a .sqlite file, it will default to using an in-memory sqlite database.
