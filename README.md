@@ -46,7 +46,7 @@ Now, you can use this model anywhere you like, and it will behave as if you crea
 $stateName = State::whereAbbr('NY')->first()->name;
 ```
 
-This is really useful for "Fixture" data, like states, contries, zip codes, user_roles, sites_settings, etc...
+This is really useful for "Fixture" data, like states, countries, zip codes, user_roles, sites_settings, etc...
 
 ### Relationships
 Let's say you created a `Role` model, based on an array using Sushi, that looked like this:
