@@ -2,12 +2,18 @@
 
 namespace Tests;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\File;
 use Orchestra\Testbench\TestCase;
+use Tests\Fixtures\Bar;
+use Tests\Fixtures\Foo;
 
 class SushiTest extends TestCase
 {
+    /**
+     * @var string
+     */
+    private $cachePath;
+
     public function setUp(): void
     {
         parent::setUp();
@@ -76,30 +82,4 @@ class SushiTest extends TestCase
     {
         $this->markTestSkipped('I can\' find a good way to test this right now');
     }
-}
-
-class Foo extends Model
-{
-    use \Sushi\Sushi;
-
-    protected $rows = [
-        ['foo' => 'bar', 'bob' => 'lob'],
-        ['foo' => 'baz', 'bob' => 'law'],
-    ];
-
-    public static function resetStatics()
-    {
-        static::setSushiConnection(null);
-        static::clearBootedModels();
-    }
-
-    public static function setSushiConnection($connection)
-    {
-        static::$sushiConnection = $connection;
-    }
-}
-
-class Bar extends Model
-{
-    use \Sushi\Sushi;
 }
