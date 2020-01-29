@@ -13,15 +13,15 @@ use Illuminate\Support\Str;
 trait Sushi
 {
     /**
-     * @var $sushiConnection
+     * @var \Illuminate\Database\Connectors\ConnectionFactory $sushiConnection
      */
     protected static $sushiConnection;
 
     /**
      * Resolve connection.
      *
-     * @param null $connection
-     * @return mixed
+     * @param  \Illuminate\Database\Connectors\ConnectionFactory $connection
+     * @return  mixed
      */
     public static function resolveConnection($connection = null)
     {
@@ -31,7 +31,7 @@ trait Sushi
     /**
      * Boot.
      *
-     * @throws \ReflectionException
+     * @return  void
      */
     public static function bootSushi()
     {
@@ -79,7 +79,7 @@ trait Sushi
     /**
      * Set Sqlite connection.
      *
-     * @param $database
+     * @param string $database
      */
     protected static function setSqliteConnection($database)
     {
@@ -91,6 +91,8 @@ trait Sushi
 
     /**
      * Migrate.
+     *
+     * @return  void
      */
     public function migrate()
     {

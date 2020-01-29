@@ -9,11 +9,11 @@ class CountryExample extends Model
 {
 	use \Sushi\Sushi;
 
-    /**
-     * Countries rows.
-     *
-     * @var array $rows
-     */
+	/**
+	 * Countries rows.
+	 *
+	 * @var array
+	 */
 	protected $rows = [
 		['code' => 'AF', 'code3' => 'AFG', 'name' => 'Afghanistan', 'number' => '004'],
 		['code' => 'AL', 'code3' => 'ALB', 'name' => 'Albania', 'number' => '008'],
@@ -266,4 +266,3 @@ class CountryExample extends Model
 		['code' => 'ZW', 'code3' => 'ZWE', 'name' => 'Zimbabwe', 'number' => '716']
 	];
 }
-
