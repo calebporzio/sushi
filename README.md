@@ -46,7 +46,7 @@ Now, you can use this model anywhere you like, and it will behave as if you crea
 $stateName = State::whereAbbr('NY')->first()->name;
 ```
 
-This is really useful for "Fixture" data, like states, contries, zip codes, user_roles, sites_settings, etc...
+This is really useful for "Fixture" data, like states, countries, zip codes, user_roles, sites_settings, etc...
 
 ### Relationships
 Let's say you created a `Role` model, based on an array using Sushi, that looked like this:
@@ -94,7 +94,7 @@ $user->load('role');
 User::with('role')->first();
 ```
 
-> Note: There is one cavaet when dealing with Sushi model relationships. The `whereHas` method will NOT work. This is because the two models are spread across two separate databases.
+> Note: There is one caveat when dealing with Sushi model relationships. The `whereHas` method will NOT work. This is because the two models are spread across two separate databases.
 
 ## How It Works
 Under the hood, this package creates and caches a SQLite database JUST for this model. It addes a table and populates the rows. If, for whatever reason, it can't cache a .sqlite file, it will default to using an in-memory sqlite database.
