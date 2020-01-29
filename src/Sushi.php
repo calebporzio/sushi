@@ -75,12 +75,12 @@ trait Sushi
 
         static::resolveConnection()->getSchemaBuilder()->create($tableName, function ($table) use ($firstRow) {
             foreach ($firstRow as $column => $value) {
-                if ($column === 'id') {
+                $type = is_numeric($value) ? 'integer' : 'string';
+
+                if ($column === 'id' && $type == 'integer') {
                     $table->increments('id');
                     continue;
                 }
-
-                $type = is_numeric($value) ? 'integer' : 'string';
 
                 $table->{$type}($column);
             }
