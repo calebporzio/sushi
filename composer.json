@@ -10,8 +10,7 @@
     ],
     "require": {
         "illuminate/database": "~5.8.0|^6.0.0",
-        "illuminate/support": "~5.8.0|^6.0.0",
-        "illuminate/filesystem": "~5.8.0|^6.0.0"
+        "illuminate/support": "~5.8.0|^6.0.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^8.5",
