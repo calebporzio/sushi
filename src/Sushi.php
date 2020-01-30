@@ -4,6 +4,7 @@ namespace Sushi;
 
 use Illuminate\Database\Connectors\ConnectionFactory;
 use Illuminate\Support\Str;
+use Sushi\Exceptions\MigrationException;
 
 trait Sushi
 {
@@ -67,7 +68,7 @@ trait Sushi
 
     public function migrate()
     {
-        throw_unless(is_array($this->rows), new \Exception('Sushi: $rows property not found on model: '.get_class($this)));
+        throw_unless(is_array($this->rows),MigrationException::modelRowsNotFound(get_class($this)));
 
         $rows = $this->rows;
         $firstRow = $rows[0];
