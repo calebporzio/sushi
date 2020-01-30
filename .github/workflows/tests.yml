@@ -1,5 +1,12 @@
 name: Tests
 
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+    types: [ready_for_review, synchronize, opened]
+
 jobs:
   php-tests:
     runs-on: ${{ matrix.os }}
