@@ -74,11 +74,15 @@ trait Sushi
         $tableName = $this->getTable();
 
         static::resolveConnection()->getSchemaBuilder()->create($tableName, function ($table) use ($firstRow) {
+            if ($this->incrementing && ! in_array($this->primaryKey, $firstRow)) {
+                $table->increments($this->primaryKey);
+            }
+
             foreach ($firstRow as $column => $value) {
                 $type = is_numeric($value) ? 'integer' : 'string';
 
-                if ($column === 'id' && $type == 'integer') {
-                    $table->increments('id');
+                if ($column === $this->primaryKey && $type == 'integer') {
+                    $table->increments($this->primaryKey);
                     continue;
                 }
 
