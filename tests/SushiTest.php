@@ -5,6 +5,7 @@ namespace Tests;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\File;
 use Orchestra\Testbench\TestCase;
+use Sushi\Exceptions\MigrationException;
 
 class SushiTest extends TestCase
 {
@@ -40,6 +41,7 @@ class SushiTest extends TestCase
     function not_adding_rows_property_throws_an_error()
     {
         $this->expectExceptionMessage('Sushi: $rows property not found on model: Tests\Bar');
+        $this->expectException(MigrationException::class);
 
         Bar::count();
     }
