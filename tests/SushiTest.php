@@ -8,10 +8,8 @@ use Orchestra\Testbench\TestCase;
 
 class SushiTest extends TestCase
 {
-    /**
-     * @var string
-     */
-    var $cachePath;
+    public $cachePath;
+
     public function setUp(): void
     {
         parent::setUp();
