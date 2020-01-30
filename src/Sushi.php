@@ -17,7 +17,7 @@ trait Sushi
     public static function bootSushi()
     {
         $instance = (new static);
-        $cacheFileName = 'sushi-'.Str::kebab(str_replace('\\', '', static::class)).'.sqlite';
+        $cacheFileName = config('sushi.cache-prefix', 'sushi').'-'.Str::kebab(str_replace('\\', '', static::class)).'.sqlite';
         $cacheDirectory = realpath(config('sushi.cache-path', storage_path('framework/cache')));
         $cachePath = $cacheDirectory.'/'.$cacheFileName;
         $modelPath = (new \ReflectionClass(static::class))->getFileName();
