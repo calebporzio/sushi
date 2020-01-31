@@ -2,106 +2,83 @@
 
 namespace Tests;
 
-use Illuminate\Database\Eloquent\Model;
+use Exception;
 use Illuminate\Support\Facades\File;
 use Orchestra\Testbench\TestCase;
+use Tests\Fixtures\Bar;
+use Tests\Fixtures\Foo;
 
 class SushiTest extends TestCase
 {
+    /**
+     * @var string
+     */
     public $cachePath;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 
         config(['sushi.cache-path' => $this->cachePath = __DIR__.'/cache']);
 
-        Foo::resetStatics();
-        File::cleanDirectory($this->cachePath);
+        $this->cleanUp();
     }
 
-    public function tearDown(): void
+    protected function tearDown(): void
     {
-        Foo::resetStatics();
-        File::cleanDirectory($this->cachePath);
+        $this->cleanUp();
 
         parent::tearDown();
     }
 
-    /** @test */
-    function basic_usage()
+    private function cleanUp()
     {
-        $this->assertEquals(2, Foo::count());
-        $this->assertEquals('bar', Foo::first()->foo);
-        $this->assertEquals('lob', Foo::whereBob('lob')->first()->bob);
+        Foo::resetStatics();
+        File::cleanDirectory($this->cachePath);
     }
 
     /** @test */
-    function not_adding_rows_property_throws_an_error()
+    public function basic_usage()
     {
-        $this->expectExceptionMessage('Sushi: $rows property not found on model: Tests\Bar');
-
-        Bar::count();
+        $this->assertSame(2, Foo::query()->count());
+        $this->assertSame('bar', Foo::first()->foo);
+        $this->assertSame('lob', Foo::where('bob', 'lob')->first()->bob);
     }
 
     /** @test */
-    function uses_in_memory_if_the_cache_directory_is_not_writeable_or_not_found()
+    public function not_adding_rows_property_throws_an_error()
     {
-        config(['sushi.cache-path' => $path = __DIR__.'/non-existant-path']);
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Sushi: $rows property not found on model: Tests\Fixtures\Bar');
 
-        Foo::count();
-
-        $this->assertFalse(file_exists($path));
-        $this->assertEquals(':memory:', (new Foo)->getConnection()->getDatabaseName());
+        Bar::query()->count();
     }
 
     /** @test */
-    function caches_sqlite_file_if_storage_cache_folder_is_available()
+    public function uses_in_memory_if_the_cache_directory_is_not_writeable_or_not_found()
     {
-        Foo::count();
+        config(['sushi.cache-path' => $this->cachePath = __DIR__.'/non-existent-path']);
 
-        $this->assertTrue(file_exists($this->cachePath));
-        $this->assertStringContainsString(
-            'sushi/tests/cache/sushi-tests-foo.sqlite',
-            (new Foo)->getConnection()->getDatabaseName()
-        );
+        Foo::query()->count();
+
+        $this->assertFileNotExists($this->cachePath);
+        $this->assertSame(':memory:', (new Foo())->getConnection()->getDatabaseName());
     }
 
     /** @test */
-    function uses_same_cache_between_requests()
+    public function caches_sqlite_file_if_storage_cache_folder_is_available()
     {
-        $this->markTestSkipped('I can\' find a good way to test this right now');
+        Foo::query()->count();
+
+        $this->assertFileExists($this->cachePath);
+
+        $expected = str_replace('/', DIRECTORY_SEPARATOR, 'sushi/tests/cache/sushi-tests-fixtures-foo.sqlite');
+        $this->assertStringContainsString($expected, (new Foo())->getConnection()->getDatabaseName());
     }
 
     /** @test */
-    function use_same_cache_between_requests()
+    public function uses_same_cache_between_requests()
     {
-        $this->markTestSkipped('I can\' find a good way to test this right now');
+        $this->markTestSkipped("I can't find a good way to test this right now.");
     }
-}
-
-class Foo extends Model
-{
-    use \Sushi\Sushi;
-
-    protected $rows = [
-        ['foo' => 'bar', 'bob' => 'lob'],
-        ['foo' => 'baz', 'bob' => 'law'],
-    ];
-
-    public static function resetStatics()
-    {
-        static::setSushiConnection(null);
-        static::clearBootedModels();
-    }
-
-    public static function setSushiConnection($connection)
-    {
-        static::$sushiConnection = $connection;
-    }
-}
-
-class Bar extends Model
-{
-    use \Sushi\Sushi;
 }
