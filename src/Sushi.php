@@ -18,6 +18,7 @@ trait Sushi
     public static function bootSushi()
     {
         $instance = (new static);
+
         $cacheDirectory = realpath(config('sushi.cache-path', storage_path('framework/cache')));
         $cachePath = static::getSushiCachePath();
         $modelPath = static::getSushiModelPath();
@@ -26,7 +27,7 @@ trait Sushi
             'cache-file-found-and-up-to-date' => function () use ($cachePath) {
                 static::setSqliteConnection($cachePath);
             },
-            'cache-file-not-found-or-stale' => function () use ($cachePath, $modelPath, $instance) {
+            'cache-file-not-found-or-stale' => function () {
                 static::migrateSushiCache();
             },
             'no-caching-capabilities' => function () use ($instance) {
@@ -37,11 +38,11 @@ trait Sushi
         ];
 
         switch (true) {
-            case file_exists($cachePath) && filemtime($modelPath) === filemtime($cachePath):
+            case static::cacheFileFoundAndUpToDate($cachePath, $modelPath):
                 $states['cache-file-found-and-up-to-date']();
                 break;
 
-            case file_exists($cacheDirectory) && is_writable($cacheDirectory):
+            case static::cacheFileNotFoundOrStale($cacheDirectory):
                 $states['cache-file-not-found-or-stale']();
                 break;
 
@@ -51,19 +52,9 @@ trait Sushi
         }
     }
 
-    protected static function setSqliteConnection($database)
-    {
-        static::$sushiConnection = app(ConnectionFactory::class)->make([
-            'driver' => 'sqlite',
-            'database' => $database,
-        ]);
-    }
-
     public function migrate()
     {
         $rows = $this->getRows();
-
-        throw_unless(is_array($rows), new \Exception('Sushi: $rows property not found on model: '.get_class($this)));
 
         $firstRow = $rows[0];
         $tableName = $this->getTable();
@@ -93,7 +84,29 @@ trait Sushi
 
     protected function getRows()
     {
-        return $this->rows;
+        $rows = $this->rows;
+
+        throw_unless(is_array($rows), new \Exception('Sushi: $rows property not found on model: '.get_class($this)));
+
+        return $rows;
+    }
+
+    protected static function cacheFileFoundAndUpToDate($cachePath, $modelPath)
+    {
+        return file_exists($cachePath) && filemtime($modelPath) === filemtime($cachePath);
+    }
+
+    protected static function cacheFileNotFoundOrStale($cacheDirectory)
+    {
+        return file_exists($cacheDirectory) && is_writable($cacheDirectory);
+    }
+
+    protected static function setSqliteConnection($database)
+    {
+        static::$sushiConnection = app(ConnectionFactory::class)->make([
+            'driver' => 'sqlite',
+            'database' => $database,
+        ]);
     }
 
     private static function migrateSushiCache()
