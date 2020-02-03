@@ -17,9 +17,6 @@ trait Sushi
 
     public static function bootSushi()
     {
-        $instance = (new static);
-
-        $cacheDirectory = realpath(config('sushi.cache-path', storage_path('framework/cache')));
         $cachePath = static::getSushiCachePath();
         $modelPath = static::getSushiModelPath();
 
@@ -30,25 +27,19 @@ trait Sushi
             'cache-file-not-found-or-stale' => function () {
                 static::migrateSushiCache();
             },
-            'no-caching-capabilities' => function () use ($instance) {
+            'no-caching-capabilities' => function () {
                 static::setSqliteConnection(':memory:');
 
-                $instance->migrate();
+                (new static)->migrate();
             },
         ];
 
-        switch (true) {
-            case static::cacheFileFoundAndUpToDate($cachePath, $modelPath):
-                $states['cache-file-found-and-up-to-date']();
-                break;
-
-            case static::cacheFileNotFoundOrStale($cacheDirectory):
-                $states['cache-file-not-found-or-stale']();
-                break;
-
-            default:
-                $states['no-caching-capabilities']();
-                break;
+        if (static::cacheFileFoundAndUpToDate($cachePath, $modelPath)) {
+            $states['cache-file-found-and-up-to-date']();
+        } else if (static::cacheFileNotFoundOrStale(static::getSushiCacheDirectory())) {
+            $states['cache-file-not-found-or-stale']();
+        } else {
+            $states['no-caching-capabilities']();
         }
     }
 
@@ -126,13 +117,17 @@ trait Sushi
     private static function getSushiCachePath()
     {
         $cacheFileName = config('sushi.cache-prefix', 'sushi').'-'.Str::kebab(str_replace('\\', '', static::class)).'.sqlite';
-        $cacheDirectory = realpath(config('sushi.cache-path', storage_path('framework/cache')));
 
-        return $cacheDirectory.'/'.$cacheFileName;
+        return static::getSushiCacheDirectory().'/'.$cacheFileName;
     }
 
     private static function getSushiModelPath()
     {
         return (new \ReflectionClass(static::class))->getFileName();
+    }
+
+    private static function getSushiCacheDirectory()
+    {
+        return realpath(config('sushi.cache-path', storage_path('framework/cache')));
     }
 }
