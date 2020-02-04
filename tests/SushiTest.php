@@ -91,6 +91,45 @@ class SushiTest extends TestCase
         $this->assertEquals(1, Foo::find(1)->getKey());
     }
 
+    /** @test */
+    public function can_be_used_in_a_test_environment()
+    {
+        $this->assertEquals([
+            ['id' => 1, 'foo' => 'bar', 'bob' => 'lob'],
+            ['id' => 2, 'foo' => 'bar', 'bob' => 'lob'],
+            ['id' => 3, 'foo' => 'baz', 'bob' => 'law'],
+        ], Foo::all()->toArray());
+
+        Foo::test([
+            ['name' => 'foo'],
+            ['name' => 'bar'],
+        ]);
+
+        $this->assertEquals([
+            ['id' => 1, 'name' => 'foo'],
+            ['id' => 2, 'name' => 'bar'],
+        ], Foo::all()->toArray());
+
+        Foo::test([
+            ['name' => 'baz'],
+            ['name' => 'naz'],
+        ]);
+
+        Baz::test([
+            ['name' => 'wut'],
+            ['name' => 'tit'],
+        ]);
+
+        $this->assertEquals([
+            ['id' => 1, 'name' => 'baz'],
+            ['id' => 2, 'name' => 'naz'],
+        ], Foo::all()->toArray());
+
+        $this->assertEquals([
+            ['id' => 1, 'name' => 'wut'],
+            ['id' => 2, 'name' => 'tit'],
+        ], Baz::all()->toArray());
+    }
 }
 
 class Foo extends Model
@@ -107,6 +146,7 @@ class Foo extends Model
     {
         static::setSushiConnection(null);
         static::clearBootedModels();
+        static::$testRows = null;
     }
 
     public static function setSushiConnection($connection)
@@ -143,6 +183,7 @@ class Bar extends Model
     {
         static::setSushiConnection(null);
         static::clearBootedModels();
+        static::$testRows = null;
     }
 
     public static function setSushiConnection($connection)

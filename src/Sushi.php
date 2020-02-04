@@ -8,6 +8,7 @@ use Illuminate\Support\Str;
 trait Sushi
 {
     protected static $sushiConnection;
+    protected static $testRows;
 
     public function getRows()
     {
@@ -49,6 +50,10 @@ trait Sushi
         ];
 
         switch (true) {
+            case static::inTestMode():
+                $states['no-caching-capabilities']();
+                break;
+
             case ! property_exists($instance, 'rows'):
                 $states['no-caching-capabilities']();
                 break;
@@ -77,7 +82,7 @@ trait Sushi
 
     public function migrate()
     {
-        $rows = $this->getRows();
+        $rows = static::inTestMode() ? static::$testRows : $this->getRows();
         $firstRow = $rows[0];
         $tableName = $this->getTable();
 
@@ -100,5 +105,20 @@ trait Sushi
         });
 
         static::insert($rows);
+    }
+
+    public static function test($rows)
+    {
+        // Must set the test rows before creating an instance of the model
+        static::$testRows = $rows;
+
+        $instance = (new static);
+        static::setSqliteConnection(':memory:');
+        $instance->migrate();
+    }
+
+    protected static function inTestMode()
+    {
+        return static::$testRows !== null;
     }
 }
