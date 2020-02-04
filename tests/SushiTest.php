@@ -78,6 +78,13 @@ class SushiTest extends TestCase
     {
         $this->markTestSkipped('I can\' find a good way to test this right now');
     }
+
+    /** @test */
+    function adds_primary_key_if_needed()
+    {
+        $this->assertEquals(1, Foo::find(1)->getKey());
+    }
+
 }
 
 class Foo extends Model
