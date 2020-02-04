@@ -83,7 +83,7 @@ trait Sushi
 
         static::resolveConnection()->getSchemaBuilder()->create($tableName, function ($table) use ($firstRow) {
             // Add the "id" column if it doesn't already exist in the rows.
-            if ($this->incrementing && ! in_array($this->primaryKey, array_keys($firstRow))) {
+            if ($this->incrementing && ! array_key_exists($this->primaryKey, $firstRow)) {
                 $table->increments($this->primaryKey);
             }
 
