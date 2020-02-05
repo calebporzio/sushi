@@ -85,6 +85,22 @@ class SushiTest extends TestCase
         $this->assertEquals(1, Foo::find(1)->getKey());
     }
 
+    /** @test */
+    public function it_uses_the_expected_column_types_for_the_schema()
+    {
+        $baz = (new Baz)->first();
+
+        $columns = collect($baz->getConnection()->select("pragma table_info({$baz->getTable()})"));
+
+        $name = $columns->firstWhere('name', 'name');
+        $this->assertEquals('varchar', $name->type);
+
+        $age = $columns->firstWhere('name', 'age');
+        $this->assertEquals('integer', $age->type);
+
+        $price = $columns->firstWhere('name', 'price');
+        $this->assertEquals('float', $price->type);
+    }
 }
 
 class Foo extends Model
@@ -111,4 +127,17 @@ class Foo extends Model
 class Bar extends Model
 {
     use \Sushi\Sushi;
+}
+
+class Baz extends Model
+{
+    use \Sushi\Sushi;
+
+    protected $rows = [
+        [
+            'name' => 'foobar',
+            'age' => 10,
+            'price' => 9.99,
+        ],
+    ];
 }

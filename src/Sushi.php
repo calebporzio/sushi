@@ -79,9 +79,15 @@ trait Sushi
             }
 
             foreach ($firstRow as $column => $value) {
-                $type = is_numeric($value) ? 'integer' : 'string';
+                if (is_int($value)) {
+                    $type = 'integer';
+                } elseif (is_float($value)) {
+                    $type = 'float';
+                } else {
+                    $type = 'string';
+                }
 
-                if ($column === $this->primaryKey && $type == 'integer') {
+                if ($column === $this->primaryKey && $type === 'integer') {
                     $table->increments($this->primaryKey);
                     continue;
                 }
