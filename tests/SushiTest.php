@@ -34,6 +34,9 @@ class SushiTest extends TestCase
         $this->assertEquals(2, Foo::count());
         $this->assertEquals('bar', Foo::first()->foo);
         $this->assertEquals('lob', Foo::whereBob('lob')->first()->bob);
+        $this->assertEquals(2, Bar::count());
+        $this->assertEquals('bar', Bar::first()->foo);
+        $this->assertEquals('lob', Bar::whereBob('lob')->first()->bob);
     }
 
     /** @test */
@@ -41,7 +44,7 @@ class SushiTest extends TestCase
     {
         $this->expectExceptionMessage('Sushi: $rows property not found on model: Tests\Bar');
 
-        Bar::count();
+        Baz::count();
     }
 
     /** @test */
@@ -109,6 +112,30 @@ class Foo extends Model
 }
 
 class Bar extends Model
+{
+    use \Sushi\Sushi;
+
+    public function getRows()
+    {
+        return [
+            ['foo' => 'bar', 'bob' => 'lob'],
+            ['foo' => 'baz', 'bob' => 'law'],
+        ];
+    }
+
+    public static function resetStatics()
+    {
+        static::setSushiConnection(null);
+        static::clearBootedModels();
+    }
+
+    public static function setSushiConnection($connection)
+    {
+        static::$sushiConnection = $connection;
+    }
+}
+
+class Baz extends Model
 {
     use \Sushi\Sushi;
 }
