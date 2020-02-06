@@ -98,3 +98,26 @@ User::with('role')->first();
 
 ## How It Works
 Under the hood, this package creates and caches a SQLite database JUST for this model. It creates a table and populates the rows. If, for whatever reason, it can't cache a .sqlite file, it will default to using an in-memory sqlite database.
+
+## Using ->getRows()
+You can optionally opt out of using the `protected $rows` property, and directly implement your own `getRows()` method.
+
+This will allow you to determine the rows for the model at runtime. You can even generate the model's rows from an external source like a third-party API.
+
+> Note: If you choose to use your own ->getRows() method, the rows will NOT be cached between requests.
+
+```php
+class Role extends Model
+{
+    use \Sushi\Sushi;
+
+    public function getRows()
+    {
+        return [
+            ['id' => 1, 'label' => 'admin'],
+            ['id' => 2, 'label' => 'manager'],
+            ['id' => 3, 'label' => 'user'],
+        ];
+    }
+}
+```
