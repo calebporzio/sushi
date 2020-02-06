@@ -17,12 +17,14 @@ class SushiTest extends TestCase
         config(['sushi.cache-path' => $this->cachePath = __DIR__.'/cache']);
 
         Foo::resetStatics();
+        Bar::resetStatics();
         File::cleanDirectory($this->cachePath);
     }
 
     public function tearDown(): void
     {
         Foo::resetStatics();
+        Bar::resetStatics();
         File::cleanDirectory($this->cachePath);
 
         parent::tearDown();
@@ -40,11 +42,12 @@ class SushiTest extends TestCase
     }
 
     /** @test */
-    function not_adding_rows_property_throws_an_error()
+    function models_using_the_get_rows_property_arent_cached()
     {
-        $this->expectExceptionMessage('Sushi: $rows property not found on model: Tests\Bar');
-
-        Baz::count();
+        Bar::$hasBeenAccessedBefore = false;
+        $this->assertEquals(2, Bar::count());
+        Bar::resetStatics();
+        $this->assertEquals(3, Bar::count());
     }
 
     /** @test */
@@ -68,16 +71,6 @@ class SushiTest extends TestCase
             'sushi/tests/cache/sushi-tests-foo.sqlite',
             (new Foo)->getConnection()->getDatabaseName()
         );
-    }
-
-    /** @test */
-    function flushes_row_cache()
-    {
-        $this->assertSame(2, FooWithMethod::count());
-
-        FooWithMethod::flushRowCache();
-
-        $this->assertSame(2, FooWithMethod::count());
     }
 
     /** @test */
@@ -121,40 +114,28 @@ class Foo extends Model
     }
 }
 
-class FooWithMethod extends Model
-{
-    use \Sushi\Sushi;
-
-    public static function resetStatics()
-    {
-        static::setSushiConnection(null);
-        static::clearBootedModels();
-    }
-
-    public static function setSushiConnection($connection)
-    {
-        static::$sushiConnection = $connection;
-    }
-
-    protected function getRows()
-    {
-        return [
-            ['foo' => 'bar', 'bob' => 'lob'],
-            ['foo' => 'baz', 'bob' => 'law'],
-        ];
-    }
-}
-
 class Bar extends Model
 {
     use \Sushi\Sushi;
 
+    public static $hasBeenAccessedBefore = false;
+
     public function getRows()
     {
-        return [
-            ['foo' => 'bar', 'bob' => 'lob'],
-            ['foo' => 'baz', 'bob' => 'law'],
-        ];
+        if (static::$hasBeenAccessedBefore) {
+            return [
+                ['foo' => 'bar', 'bob' => 'lob'],
+                ['foo' => 'baz', 'bob' => 'law'],
+                ['foo' => 'baz', 'bob' => 'law'],
+            ];
+        } else {
+            static::$hasBeenAccessedBefore = true;
+
+            return [
+                ['foo' => 'bar', 'bob' => 'lob'],
+                ['foo' => 'baz', 'bob' => 'law'],
+            ];
+        }
     }
 
     public static function resetStatics()
