@@ -99,6 +99,7 @@ class Foo extends Model
 
     protected $rows = [
         ['foo' => 'bar', 'bob' => 'lob'],
+        ['foo' => 'bar', 'bob' => 'lob'],
         ['foo' => 'baz', 'bob' => 'law'],
     ];
 
