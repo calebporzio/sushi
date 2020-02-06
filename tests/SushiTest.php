@@ -71,15 +71,25 @@ class SushiTest extends TestCase
     }
 
     /** @test */
+    function flushes_row_cache()
+    {
+        $this->assertSame(2, FooWithMethod::count());
+
+        FooWithMethod::flushRowCache();
+
+        $this->assertSame(2, FooWithMethod::count());
+    }
+
+    /** @test */
     function uses_same_cache_between_requests()
     {
-        $this->markTestSkipped('I can\' find a good way to test this right now');
+        $this->markTestSkipped("I can't find a good way to test this right now.");
     }
 
     /** @test */
     function use_same_cache_between_requests()
     {
-        $this->markTestSkipped('I can\' find a good way to test this right now');
+        $this->markTestSkipped("I can't find a good way to test this right now.");
     }
 
     /** @test */
@@ -108,6 +118,30 @@ class Foo extends Model
     public static function setSushiConnection($connection)
     {
         static::$sushiConnection = $connection;
+    }
+}
+
+class FooWithMethod extends Model
+{
+    use \Sushi\Sushi;
+
+    public static function resetStatics()
+    {
+        static::setSushiConnection(null);
+        static::clearBootedModels();
+    }
+
+    public static function setSushiConnection($connection)
+    {
+        static::$sushiConnection = $connection;
+    }
+
+    protected function getRows()
+    {
+        return [
+            ['foo' => 'bar', 'bob' => 'lob'],
+            ['foo' => 'baz', 'bob' => 'law'],
+        ];
     }
 }
 
