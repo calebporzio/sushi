@@ -2,8 +2,9 @@
 
 namespace Sushi;
 
-use Illuminate\Database\Connectors\ConnectionFactory;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Connectors\ConnectionFactory;
 
 trait Sushi
 {
@@ -16,60 +17,36 @@ trait Sushi
 
     public static function bootSushi()
     {
-        $instance = (new static);
-        $cacheFileName = config('sushi.cache-prefix', 'sushi').'-'.Str::kebab(str_replace('\\', '', static::class)).'.sqlite';
-        $cacheDirectory = realpath(config('sushi.cache-path', storage_path('framework/cache')));
-        $cachePath = $cacheDirectory.'/'.$cacheFileName;
-        $modelPath = (new \ReflectionClass(static::class))->getFileName();
+        $cachePath = static::getSushiCachePath();
+        $modelPath = static::getSushiModelPath();
 
         $states = [
             'cache-file-found-and-up-to-date' => function () use ($cachePath) {
                 static::setSqliteConnection($cachePath);
             },
-            'cache-file-not-found-or-stale' => function () use ($cachePath, $modelPath, $instance) {
-                file_put_contents($cachePath, '');
-
-                static::setSqliteConnection($cachePath);
-
-                $instance->migrate();
-
-                touch($cachePath, filemtime($modelPath));
+            'cache-file-not-found-or-stale' => function () {
+                static::migrateSushiCache();
             },
-            'no-caching-capabilities' => function () use ($instance) {
+            'no-caching-capabilities' => function () {
                 static::setSqliteConnection(':memory:');
 
-                $instance->migrate();
+                (new static)->migrate();
             },
         ];
 
-        switch (true) {
-            case file_exists($cachePath) && filemtime($modelPath) === filemtime($cachePath):
-                $states['cache-file-found-and-up-to-date']();
-                break;
-
-            case file_exists($cacheDirectory) && is_writable($cacheDirectory):
-                $states['cache-file-not-found-or-stale']();
-                break;
-
-            default:
-                $states['no-caching-capabilities']();
-                break;
+        if (static::cacheFileFoundAndUpToDate($cachePath, $modelPath)) {
+            $states['cache-file-found-and-up-to-date']();
+        } else if (static::cacheFileNotFoundOrStale(static::getSushiCacheDirectory())) {
+            $states['cache-file-not-found-or-stale']();
+        } else {
+            $states['no-caching-capabilities']();
         }
-    }
-
-    protected static function setSqliteConnection($database)
-    {
-        static::$sushiConnection = app(ConnectionFactory::class)->make([
-            'driver' => 'sqlite',
-            'database' => $database,
-        ]);
     }
 
     public function migrate()
     {
-        throw_unless(is_array($this->rows), new \Exception('Sushi: $rows property not found on model: '.get_class($this)));
+        $rows = $this->getRows();
 
-        $rows = $this->rows;
         $firstRow = $rows[0];
         $tableName = $this->getTable();
 
@@ -91,5 +68,70 @@ trait Sushi
         });
 
         static::insert($rows);
+    }
+
+    public static function flushRowCache()
+    {
+        (new static)->query()->delete();
+
+        static::migrateSushiCache();
+    }
+
+    protected function getRows()
+    {
+        $rows = $this->rows;
+
+        throw_unless(is_array($rows), new \Exception('Sushi: $rows property not found on model: '.get_class($this)));
+
+        return $rows;
+    }
+
+    protected static function cacheFileFoundAndUpToDate($cachePath, $modelPath)
+    {
+        return file_exists($cachePath) && filemtime($modelPath) === filemtime($cachePath);
+    }
+
+    protected static function cacheFileNotFoundOrStale($cacheDirectory)
+    {
+        return file_exists($cacheDirectory) && is_writable($cacheDirectory);
+    }
+
+    protected static function setSqliteConnection($database)
+    {
+        static::$sushiConnection = app(ConnectionFactory::class)->make([
+            'driver' => 'sqlite',
+            'database' => $database,
+        ]);
+    }
+
+    private static function migrateSushiCache()
+    {
+        $cachePath = static::getSushiCachePath();
+        $modelPath = static::getSushiModelPath();
+
+        file_put_contents($cachePath, '');
+
+        static::setSqliteConnection($cachePath);
+
+        (new static)->migrate();
+
+        touch($cachePath, filemtime($modelPath));
+    }
+
+    private static function getSushiCachePath()
+    {
+        $cacheFileName = config('sushi.cache-prefix', 'sushi').'-'.Str::kebab(str_replace('\\', '', static::class)).'.sqlite';
+
+        return static::getSushiCacheDirectory().'/'.$cacheFileName;
+    }
+
+    private static function getSushiModelPath()
+    {
+        return (new \ReflectionClass(static::class))->getFileName();
+    }
+
+    private static function getSushiCacheDirectory()
+    {
+        return realpath(config('sushi.cache-path', storage_path('framework/cache')));
     }
 }
