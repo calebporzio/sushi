@@ -78,6 +78,14 @@ trait Sushi
     public function migrate()
     {
         $rows = $this->getRows();
+
+        $this->createTable($rows);
+
+        static::insert($rows);
+    }
+
+    protected function createTable($rows)
+    {
         $firstRow = $rows[0];
         $tableName = $this->getTable();
 
@@ -98,7 +106,5 @@ trait Sushi
                 $table->{$type}($column);
             }
         });
-
-        static::insert($rows);
     }
 }
