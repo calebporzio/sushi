@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Database\Eloquent\Model;
+
 /**
  * Example country "fixture" using data formatted with ISO 3166-1 alpha-2, alpha3, and numeric standards.
  * Ordered alphabetical by country.
