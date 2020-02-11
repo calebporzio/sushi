@@ -31,9 +31,9 @@ class SushiTest extends TestCase
     }
 
     /** @test */
-    function basic_usage()
+    public function basic_usage()
     {
-        $this->assertEquals(2, Foo::count());
+        $this->assertEquals(3, Foo::count());
         $this->assertEquals('bar', Foo::first()->foo);
         $this->assertEquals('lob', Foo::whereBob('lob')->first()->bob);
         $this->assertEquals(2, Bar::count());
@@ -42,7 +42,7 @@ class SushiTest extends TestCase
     }
 
     /** @test */
-    function models_using_the_get_rows_property_arent_cached()
+    public function models_using_the_get_rows_property_arent_cached()
     {
         Bar::$hasBeenAccessedBefore = false;
         $this->assertEquals(2, Bar::count());
@@ -51,7 +51,7 @@ class SushiTest extends TestCase
     }
 
     /** @test */
-    function uses_in_memory_if_the_cache_directory_is_not_writeable_or_not_found()
+    public function uses_in_memory_if_the_cache_directory_is_not_writeable_or_not_found()
     {
         config(['sushi.cache-path' => $path = __DIR__.'/non-existant-path']);
 
@@ -62,7 +62,7 @@ class SushiTest extends TestCase
     }
 
     /** @test */
-    function caches_sqlite_file_if_storage_cache_folder_is_available()
+    public function caches_sqlite_file_if_storage_cache_folder_is_available()
     {
         Foo::count();
 
@@ -74,23 +74,22 @@ class SushiTest extends TestCase
     }
 
     /** @test */
-    function uses_same_cache_between_requests()
+    public function uses_same_cache_between_requests()
     {
         $this->markTestSkipped("I can't find a good way to test this right now.");
     }
 
     /** @test */
-    function use_same_cache_between_requests()
+    public function use_same_cache_between_requests()
     {
         $this->markTestSkipped("I can't find a good way to test this right now.");
     }
 
     /** @test */
-    function adds_primary_key_if_needed()
+    public function adds_primary_key_if_needed()
     {
         $this->assertEquals(1, Foo::find(1)->getKey());
     }
-
 }
 
 class Foo extends Model
