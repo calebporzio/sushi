@@ -7,8 +7,6 @@ use Illuminate\Support\Str;
 
 trait Sushi
 {
-    public $timestamps = false;
-
     protected static $sushiConnection;
 
     public function getRows()
@@ -100,11 +98,19 @@ trait Sushi
                 $table->{$type}($column);
             }
 
-            if ($this->timestamps && ! in_array('updated_at', array_keys($firstRow)) || ! in_array('created_at', array_keys($firstRow))) {
+            if ($this->usesTimestamps() && (! in_array('updated_at', array_keys($firstRow)) || ! in_array('created_at', array_keys($firstRow)))) {
                 $table->timestamps();
             }
         });
 
         static::insert($rows);
+    }
+
+    public function usesTimestamps()
+    {
+        // Override the Laravel default value of $timestamps = true; Unless otherwise set.
+        return (new \ReflectionClass($this))->getProperty('timestamps')->class === static::class
+            ? parent::usesTimestamps()
+            : false;
     }
 }
