@@ -33,10 +33,10 @@ class SushiTest extends TestCase
     /** @test */
     function basic_usage()
     {
-        $this->assertEquals(2, Foo::count());
+        $this->assertEquals(3, Foo::count());
         $this->assertEquals('bar', Foo::first()->foo);
         $this->assertEquals('lob', Foo::whereBob('lob')->first()->bob);
-        $this->assertEquals(2, Bar::count());
+        $this->assertEquals(3, Bar::count());
         $this->assertEquals('bar', Bar::first()->foo);
         $this->assertEquals('lob', Bar::whereBob('lob')->first()->bob);
     }

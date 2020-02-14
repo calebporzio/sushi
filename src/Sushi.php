@@ -53,7 +53,7 @@ trait Sushi
                 $states['no-caching-capabilities']();
                 break;
 
-            case file_exists($cachePath) && filemtime($modelPath) === filemtime($cachePath):
+            case file_exists($cachePath) && filemtime($modelPath) <= filemtime($cachePath):
                 $states['cache-file-found-and-up-to-date']();
                 break;
 
