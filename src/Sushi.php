@@ -7,6 +7,8 @@ use Illuminate\Support\Str;
 
 trait Sushi
 {
+    public $timestamps = false;
+
     protected static $sushiConnection;
 
     public function getRows()
