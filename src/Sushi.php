@@ -87,10 +87,6 @@ trait Sushi
                 $table->increments($this->primaryKey);
             }
 
-            if ($this->timestamps && ! in_array('update_at', array_keys($firstRow)) || ! in_array('created_at', array_keys($firstRow))) {
-                $table->timestamps();
-            }
-
             foreach ($firstRow as $column => $value) {
                 $type = is_numeric($value) ? 'integer' : 'string';
 
@@ -100,6 +96,10 @@ trait Sushi
                 }
 
                 $table->{$type}($column);
+            }
+
+            if ($this->timestamps && ! in_array('updated_at', array_keys($firstRow)) || ! in_array('created_at', array_keys($firstRow))) {
+                $table->timestamps();
             }
         });
 
