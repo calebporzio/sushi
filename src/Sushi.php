@@ -88,8 +88,24 @@ trait Sushi
             }
 
             foreach ($firstRow as $column => $value) {
-                $type = is_numeric($value) ? 'integer' : 'string';
-
+                 
+                switch (true) {
+                    case is_numeric($value):
+                        $type = 'integer';
+                        break;
+                    case is_array($value):
+                        $type = 'longtext';
+                        break;
+                    case is_float($value):
+                        $type = 'float';
+                        break;
+                    case is_string($value):
+                        $type = 'string';
+                        break;
+                    default:
+                        $type = 'string';
+                }
+                
                 if ($column === $this->primaryKey && $type == 'integer') {
                     $table->increments($this->primaryKey);
                     continue;
