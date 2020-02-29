@@ -95,7 +95,7 @@ trait Sushi
                     continue;
                 }
 
-                $table->{$type}($column);
+                $table->{$type}($column)->nullable();
             }
 
             if ($this->usesTimestamps() && (! in_array('updated_at', array_keys($firstRow)) || ! in_array('created_at', array_keys($firstRow)))) {
