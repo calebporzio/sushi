@@ -64,6 +64,8 @@ class SushiTest extends TestCase
     /** @test */
     function caches_sqlite_file_if_storage_cache_folder_is_available()
     {
+        File::makeDirectory($this->cachePath);
+
         Foo::count();
 
         $this->assertTrue(file_exists($this->cachePath));
