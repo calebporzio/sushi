@@ -77,7 +77,7 @@ trait Sushi
 
     public function migrate()
     {
-        $rows = $this->getRows();
+        $rows = app()->call([$this, 'getRows']);
         $firstRow = $rows[0];
         $tableName = $this->getTable();
 
