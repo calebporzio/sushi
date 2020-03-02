@@ -102,7 +102,7 @@ class SushiTest extends TestCase
 
         $service = app(ServiceDependency::class);
 
-        $this->assertEquals($service->rows[0], Baz::first());
+        $this->assertEquals($service->rows[0]['foo'], Baz::first()->foo);
     }
 }
 
