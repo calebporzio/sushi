@@ -91,6 +91,19 @@ class SushiTest extends TestCase
         $this->assertEquals(1, Foo::find(1)->getKey());
     }
 
+    /** @test */
+    function get_rows_dependencies_are_resolved_from_container()
+    {
+        app()->bind(ServiceDependency::class, function () {
+            return new ServiceDependency([
+                ['foo' => 'bar']
+            ]);
+        });
+
+        $service = app(ServiceDependency::class);
+
+        $this->assertEquals($service->rows[0], Baz::first());
+    }
 }
 
 class Foo extends Model
@@ -151,7 +164,22 @@ class Bar extends Model
     }
 }
 
+class ServiceDependency
+{
+    public $rows;
+
+    public function __construct(array $rows = [])
+    {
+        $this->rows = $rows;
+    }
+}
+
 class Baz extends Model
 {
     use \Sushi\Sushi;
+
+    public function getRows(ServiceDependency $service)
+    {
+        return $service->rows;
+    }
 }
