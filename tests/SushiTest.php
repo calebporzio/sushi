@@ -18,14 +18,14 @@ class SushiTest extends TestCase
 
         Foo::resetStatics();
         Bar::resetStatics();
-        File::cleanDirectory($this->cachePath);
+        File::deleteDirectory($this->cachePath);
     }
 
     public function tearDown(): void
     {
         Foo::resetStatics();
         Bar::resetStatics();
-        File::cleanDirectory($this->cachePath);
+        File::deleteDirectory($this->cachePath);
 
         parent::tearDown();
     }
