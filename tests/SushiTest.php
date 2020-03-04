@@ -42,6 +42,27 @@ class SushiTest extends TestCase
     }
 
     /** @test */
+    function columns_with_varying_types()
+    {
+        $row = ModelWithVaryingTypeColumns::first();
+        $connectionBuilder = ModelWithVaryingTypeColumns::resolveConnection()->getSchemaBuilder();
+        $this->assertEquals('integer', $connectionBuilder->getColumnType('model_with_varying_type_columns', 'int'));
+        $this->assertEquals('float', $connectionBuilder->getColumnType('model_with_varying_type_columns', 'float'));
+        $this->assertEquals('datetime', $connectionBuilder->getColumnType('model_with_varying_type_columns', 'dateTime'));
+        $this->assertEquals('string', $connectionBuilder->getColumnType('model_with_varying_type_columns', 'string'));
+        $this->assertEquals(null, $row->null);
+    }
+
+    /** @test */
+    function model_with_custom_schema()
+    {
+        ModelWithCustomSchema::count();
+        $connectionBuilder = ModelWithCustomSchema::resolveConnection()->getSchemaBuilder();
+        $this->assertEquals('string', $connectionBuilder->getColumnType('model_with_custom_schemas', 'float'));
+        $this->assertEquals('string', $connectionBuilder->getColumnType('model_with_custom_schemas', 'string'));
+    }
+
+    /** @test */
     function models_using_the_get_rows_property_arent_cached()
     {
         Bar::$hasBeenAccessedBefore = false;
@@ -69,7 +90,7 @@ class SushiTest extends TestCase
         $this->assertTrue(file_exists($this->cachePath));
         $this->assertStringContainsString(
             'sushi/tests/cache/sushi-tests-foo.sqlite',
-            (new Foo)->getConnection()->getDatabaseName()
+            str_replace('\\', '/', (new Foo())->getConnection()->getDatabaseName())
         );
     }
 
@@ -90,7 +111,6 @@ class SushiTest extends TestCase
     {
         $this->assertEquals(1, Foo::find(1)->getKey());
     }
-
 }
 
 class Foo extends Model
@@ -113,6 +133,35 @@ class Foo extends Model
     {
         static::$sushiConnection = $connection;
     }
+}
+
+class ModelWithVaryingTypeColumns extends Model
+{
+    use \Sushi\Sushi;
+
+    public function getRows() {
+        return [[
+            'int' => 123,
+            'float' => 123.456,
+            'datetime' => \Carbon\Carbon::parse('January 1 2020'),
+            'string' => 'bar',
+            'null' => null,
+        ]];
+    }
+}
+
+class ModelWithCustomSchema extends Model
+{
+    use \Sushi\Sushi;
+
+    protected $rows = [[
+        'float' => 123.456,
+        'string' => 'foo',
+    ]];
+
+    protected $schema = [
+        'float' => 'string',
+    ];
 }
 
 class Bar extends Model

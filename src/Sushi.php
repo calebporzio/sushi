@@ -14,6 +14,11 @@ trait Sushi
         return $this->rows;
     }
 
+    public function getSchema()
+    {
+        return $this->schema ?? [];
+    }
+
     public static function resolveConnection($connection = null)
     {
         return static::$sushiConnection;
@@ -88,12 +93,31 @@ trait Sushi
             }
 
             foreach ($firstRow as $column => $value) {
-                $type = is_numeric($value) ? 'integer' : 'string';
+                switch (true) {
+                    case is_int($value):
+                        $type = 'integer';
+                        break;
+                    case is_numeric($value):
+                        $type = 'float';
+                        break;
+                    case is_string($value):
+                        $type = 'string';
+                        break;
+                    case is_object($value) && $value instanceof \DateTime:
+                        $type = 'dateTime';
+                        break;
+                    default:
+                        $type = 'string';
+                }
 
                 if ($column === $this->primaryKey && $type == 'integer') {
                     $table->increments($this->primaryKey);
                     continue;
                 }
+
+                $schema = $this->getSchema();
+
+                $type = $schema[$column] ?? $type;
 
                 $table->{$type}($column)->nullable();
             }
