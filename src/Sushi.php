@@ -95,12 +95,6 @@ trait Sushi
                     case is_numeric($value):
                         $type = 'float';
                         break;
-                    case is_array($value):
-                        $type = 'json';
-                        break;
-                    case is_float($value):
-                        $type = 'float';
-                        break;
                     case is_string($value):
                         $type = 'string';
                         break;

@@ -42,6 +42,17 @@ class SushiTest extends TestCase
     }
 
     /** @test */
+    function columns_with_varying_types()
+    {
+        $row = ModelWithVaryingTypeColumns::first();
+        $this->assertEquals(123, $row->int);
+        $this->assertEquals(123.456, $row->float);
+        $this->assertEquals('2020-01-01 00:00:00', $row->datetime);
+        $this->assertEquals('bar', $row->string);
+        $this->assertEquals(null, $row->null);
+    }
+
+    /** @test */
     function models_using_the_get_rows_property_arent_cached()
     {
         Bar::$hasBeenAccessedBefore = false;
@@ -112,6 +123,21 @@ class Foo extends Model
     public static function setSushiConnection($connection)
     {
         static::$sushiConnection = $connection;
+    }
+}
+
+class ModelWithVaryingTypeColumns extends Model
+{
+    use \Sushi\Sushi;
+
+    public function getRows() {
+        return [[
+            'int' => 123,
+            'float' => 123.456,
+            'datetime' => \Carbon\Carbon::parse('January 1 2020'),
+            'string' => 'bar',
+            'null' => null,
+        ]];
     }
 }
 
