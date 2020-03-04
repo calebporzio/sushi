@@ -88,13 +88,15 @@ trait Sushi
             }
 
             foreach ($firstRow as $column => $value) {
-                 
                 switch (true) {
-                    case is_numeric($value):
+                    case is_int($value):
                         $type = 'integer';
                         break;
+                    case is_numeric($value):
+                        $type = 'float';
+                        break;
                     case is_array($value):
-                        $type = 'longtext';
+                        $type = 'json';
                         break;
                     case is_float($value):
                         $type = 'float';
@@ -102,16 +104,19 @@ trait Sushi
                     case is_string($value):
                         $type = 'string';
                         break;
+                    case is_object($value) && $value instanceof \DateTime:
+                        $type = 'dateTime';
+                        break;
                     default:
                         $type = 'string';
                 }
-                
+
                 if ($column === $this->primaryKey && $type == 'integer') {
                     $table->increments($this->primaryKey);
                     continue;
                 }
 
-                $table->{$type}($column);
+                $table->{$type}($column)->nullable();
             }
 
             if ($this->usesTimestamps() && (! in_array('updated_at', array_keys($firstRow)) || ! in_array('created_at', array_keys($firstRow)))) {
