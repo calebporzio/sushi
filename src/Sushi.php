@@ -28,10 +28,10 @@ trait Sushi
     {
         $instance = (new static);
 
-        $cacheFileName = config('sushi.cache-prefix', 'sushi').'-'.Str::kebab(str_replace('\\', '', static::class)).'.sqlite';
-        $cacheDirectory = realpath(config('sushi.cache-path', storage_path('framework/cache')));
+        $cacheFileName = $instance->getCacheFileName();
+        $cacheDirectory = realpath($instance->getCacheDirectory());
         $cachePath = $cacheDirectory.'/'.$cacheFileName;
-        $modelPath = (new \ReflectionClass(static::class))->getFileName();
+        $modelPath = $instance->getModelPath();
 
         $states = [
             'cache-file-found-and-up-to-date' => function () use ($cachePath) {
@@ -136,5 +136,29 @@ trait Sushi
         return (new \ReflectionClass($this))->getProperty('timestamps')->class === static::class
             ? parent::usesTimestamps()
             : false;
+    }
+
+    public function invalidateCache()
+    {
+        touch($this->cacheDirectory().'/'.$this->getCacheFileName(), filemtime($this->getModelPath()) - 10000);
+
+        return $this;
+    }
+
+    public function getCacheDirectory()
+    {
+        return $this->cacheDirectory ?? config('sushi.cache-path', storage_path('framework/cache'));
+    }
+
+    public function getCacheFileName()
+    {
+        return $this->cacheFileName ?? config('sushi.cache-prefix', 'sushi').'-'.Str::kebab(
+            str_replace('\\', '', static::class)
+        ).'.sqlite';
+    }
+
+    public function getModelPath()
+    {
+        return (new \ReflectionClass(static::class))->getFileName();
     }
 }
