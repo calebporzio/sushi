@@ -45,11 +45,21 @@ class SushiTest extends TestCase
     function columns_with_varying_types()
     {
         $row = ModelWithVaryingTypeColumns::first();
-        $this->assertEquals(123, $row->int);
-        $this->assertEquals(123.456, $row->float);
-        $this->assertEquals('2020-01-01 00:00:00', $row->datetime);
-        $this->assertEquals('bar', $row->string);
+        $connectionBuilder = ModelWithVaryingTypeColumns::resolveConnection()->getSchemaBuilder();
+        $this->assertEquals('integer', $connectionBuilder->getColumnType('model_with_varying_type_columns', 'int'));
+        $this->assertEquals('float', $connectionBuilder->getColumnType('model_with_varying_type_columns', 'float'));
+        $this->assertEquals('datetime', $connectionBuilder->getColumnType('model_with_varying_type_columns', 'dateTime'));
+        $this->assertEquals('string', $connectionBuilder->getColumnType('model_with_varying_type_columns', 'string'));
         $this->assertEquals(null, $row->null);
+    }
+
+    /** @test */
+    function model_with_custom_schema()
+    {
+        ModelWithCustomSchema::count();
+        $connectionBuilder = ModelWithCustomSchema::resolveConnection()->getSchemaBuilder();
+        $this->assertEquals('string', $connectionBuilder->getColumnType('model_with_custom_schemas', 'float'));
+        $this->assertEquals('string', $connectionBuilder->getColumnType('model_with_custom_schemas', 'string'));
     }
 
     /** @test */
@@ -101,7 +111,6 @@ class SushiTest extends TestCase
     {
         $this->assertEquals(1, Foo::find(1)->getKey());
     }
-
 }
 
 class Foo extends Model
@@ -139,6 +148,20 @@ class ModelWithVaryingTypeColumns extends Model
             'null' => null,
         ]];
     }
+}
+
+class ModelWithCustomSchema extends Model
+{
+    use \Sushi\Sushi;
+
+    protected $rows = [[
+        'float' => 123.456,
+        'string' => 'foo',
+    ]];
+
+    protected $schema = [
+        'float' => 'string',
+    ];
 }
 
 class Bar extends Model

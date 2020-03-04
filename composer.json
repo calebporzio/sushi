@@ -14,9 +14,10 @@
         "illuminate/support": "^5.8 || ^6.0 || ^7.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "^7.5 || ^8.4 || ^9.0",
+        "doctrine/dbal": "^2.10",
         "orchestra/database": "3.8.* || 3.9.* || ^4.0",
-        "orchestra/testbench": "3.8.* || 3.9.* || ^4.0"
+        "orchestra/testbench": "3.8.* || 3.9.* || ^4.0",
+        "phpunit/phpunit": "^7.5 || ^8.4 || ^9.0"
     },
     "autoload": {
         "psr-4": {

@@ -14,6 +14,11 @@ trait Sushi
         return $this->rows;
     }
 
+    public function getSchema()
+    {
+        return $this->schema ?? [];
+    }
+
     public static function resolveConnection($connection = null)
     {
         return static::$sushiConnection;
@@ -109,6 +114,10 @@ trait Sushi
                     $table->increments($this->primaryKey);
                     continue;
                 }
+
+                $schema = $this->getSchema();
+
+                $type = $schema[$column] ?? $type;
 
                 $table->{$type}($column)->nullable();
             }
