@@ -10,6 +10,8 @@ Now that we've reached the goal, the package is fully open source.
 
 Enjoy, and thanks for the support! ❤️
 
+Find out more about **Sponsorware** at [github.com/sponsorware/docs](https://github.com/sponsorware/docs) 💰.
+
 ## Install
 ```
 composer require calebporzio/sushi
