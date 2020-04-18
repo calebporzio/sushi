@@ -111,6 +111,13 @@ class SushiTest extends TestCase
     {
         $this->assertEquals(1, Foo::find(1)->getKey());
     }
+
+    /** @test */
+    function supports_non_integer_primary_key()
+    {
+        $this->assertEquals(2, ModelWithStringIds::count());
+        $this->assertEquals('ltr', ModelWithStringIds::find('ltr')->id);
+    }
 }
 
 class Foo extends Model
@@ -161,6 +168,19 @@ class ModelWithCustomSchema extends Model
 
     protected $schema = [
         'float' => 'string',
+    ];
+}
+
+
+class ModelWithStringIds extends Model
+{
+    use \Sushi\Sushi;
+
+    protected $casts = ['id' => 'string'];
+
+    protected $rows = [
+        ['id' => 'ltr', 'title' => 'Left to Right'],
+        ['id' => 'rtl','title' => 'Right to Left'],
     ];
 }
 

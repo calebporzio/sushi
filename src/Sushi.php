@@ -109,9 +109,13 @@ trait Sushi
                     default:
                         $type = 'string';
                 }
-
-                if ($column === $this->primaryKey && $type == 'integer') {
-                    $table->increments($this->primaryKey);
+                if ($column === $this->primaryKey) {
+                    if ($type == 'integer') {
+                        $table->increments($this->primaryKey);
+                    }
+                    else {
+                        $table->{$type}($column)->primary($column);
+                    }
                     continue;
                 }
 
