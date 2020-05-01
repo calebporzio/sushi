@@ -127,7 +127,11 @@ trait Sushi
             }
         });
 
-        static::insert($rows);
+        foreach (array_chunk($rows, 100) ?? [] as $inserts) {
+            if (!empty($inserts)) {
+                static::insert($inserts);
+            }
+        }
     }
 
     public function usesTimestamps()
