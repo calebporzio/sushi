@@ -36,7 +36,7 @@ class SushiTest extends TestCase
         $this->assertEquals(3, Foo::count());
         $this->assertEquals('bar', Foo::first()->foo);
         $this->assertEquals('lob', Foo::whereBob('lob')->first()->bob);
-        $this->assertEquals(3, Bar::count());
+        $this->assertEquals(2, Bar::count());
         $this->assertEquals('bar', Bar::first()->foo);
         $this->assertEquals('lob', Bar::whereBob('lob')->first()->bob);
     }
@@ -60,6 +60,12 @@ class SushiTest extends TestCase
         $connectionBuilder = ModelWithCustomSchema::resolveConnection()->getSchemaBuilder();
         $this->assertEquals('string', $connectionBuilder->getColumnType('model_with_custom_schemas', 'float'));
         $this->assertEquals('string', $connectionBuilder->getColumnType('model_with_custom_schemas', 'string'));
+    }
+
+    /** @test */
+    function model_with_no_initial_data()
+    {
+        $this->assertEmpty(Baz::count());
     }
 
     /** @test */
@@ -203,4 +209,11 @@ class Bar extends Model
 class Baz extends Model
 {
     use \Sushi\Sushi;
+
+    protected $schema = [
+        'abbr' => 'string',
+        'name' => 'string',
+    ];
+
+    protected $rows = [];
 }

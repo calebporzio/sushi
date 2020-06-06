@@ -82,40 +82,45 @@ trait Sushi
 
     public function migrate()
     {
+        $schema = $this->getSchema();
         $rows = $this->getRows();
-        $firstRow = $rows[0];
         $tableName = $this->getTable();
 
-        static::resolveConnection()->getSchemaBuilder()->create($tableName, function ($table) use ($firstRow) {
+        static::resolveConnection()->getSchemaBuilder()->create($tableName, function ($table) use ($schema, $rows) {
+            $firstRow = $schema;
+            if (!empty($rows)) {
+                $firstRow = $rows[0];
+            }
+
             // Add the "id" column if it doesn't already exist in the rows.
             if ($this->incrementing && ! in_array($this->primaryKey, array_keys($firstRow))) {
                 $table->increments($this->primaryKey);
             }
 
             foreach ($firstRow as $column => $value) {
-                switch (true) {
-                    case is_int($value):
-                        $type = 'integer';
-                        break;
-                    case is_numeric($value):
-                        $type = 'float';
-                        break;
-                    case is_string($value):
-                        $type = 'string';
-                        break;
-                    case is_object($value) && $value instanceof \DateTime:
-                        $type = 'dateTime';
-                        break;
-                    default:
-                        $type = 'string';
+                if (!empty($rows)) {
+                    switch (true) {
+                        case is_int($value):
+                            $type = 'integer';
+                            break;
+                        case is_numeric($value):
+                            $type = 'float';
+                            break;
+                        case is_string($value):
+                            $type = 'string';
+                            break;
+                        case is_object($value) && $value instanceof \DateTime:
+                            $type = 'dateTime';
+                            break;
+                        default:
+                            $type = 'string';
+                    }
                 }
 
                 if ($column === $this->primaryKey && $type == 'integer') {
                     $table->increments($this->primaryKey);
                     continue;
                 }
-
-                $schema = $this->getSchema();
 
                 $type = $schema[$column] ?? $type;
 
