@@ -14,11 +14,15 @@ jobs:
     strategy:
       matrix:
         php: [7.1, 7.2, 7.3, 7.4]
-        laravel: [5.8.*, 6.*]
+        laravel: [5.8.*, 6.*, 7.*, 8.*]
         os: [ubuntu-latest]
         exclude:
           - laravel: 6.*
             php: 7.1
+          - laravel: 7.*
+            php: 7.1
+          - laravel: 8.*
+            php: 7.1 
 
     name: PHP ${{ matrix.php }} / Laravel ${{ matrix.laravel }}
 
