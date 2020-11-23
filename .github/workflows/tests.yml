@@ -13,12 +13,29 @@ jobs:
 
     strategy:
       matrix:
-        php: [7.1, 7.2, 7.3, 7.4]
-        laravel: [5.8.*, 6.*]
+        php: [7.1, 7.2, 7.3, 7.4, 8.0]
+        laravel: [5.8.*, 6.*, 7.*, 8.*]
         os: [ubuntu-latest]
+        include:
+          - laravel: 8.*
+            testbench: 6.*
+          - laravel: 7.*
+            testbench: 5.*
+          - laravel: 6.*
+            testbench: 4.*
+          - laravel: 5.8.*
+            testbench: 3.8.*
         exclude:
+          - laravel: 5.8.*
+            php: 8.0
           - laravel: 6.*
             php: 7.1
+          - laravel: 7.*
+            php: 7.1
+          - laravel: 8.*
+            php: 7.1
+          - laravel: 8.*
+            php: 7.2
 
     name: PHP ${{ matrix.php }} / Laravel ${{ matrix.laravel }}
 
@@ -27,7 +44,7 @@ jobs:
         uses: actions/checkout@v1
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@v1
+        uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
           extension: mbstring, pdo, pdo_sqlite
@@ -35,7 +52,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          composer require "illuminate/contracts:${{ matrix.laravel }}" --no-interaction --no-update
+          composer require "illuminate/contracts:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
           composer install --prefer-dist --no-interaction --no-suggest
 
       - name: Run tests
