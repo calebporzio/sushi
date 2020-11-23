@@ -19,12 +19,16 @@ jobs:
         include:
           - laravel: 8.*
             testbench: 6.*
+            database: 6.*
           - laravel: 7.*
             testbench: 5.*
+            database: 5.*
           - laravel: 6.*
             testbench: 4.*
+            database: 4.*
           - laravel: 5.8.*
             testbench: 3.8.*
+            database: 3.8.*
         exclude:
           - laravel: 5.8.*
             php: 8.0
@@ -52,7 +56,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          composer require "illuminate/contracts:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
+          composer require "illuminate/contracts:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" "orchestra/database:${{ matrix.database }}" --no-interaction --no-update
           composer install --prefer-dist --no-interaction --no-suggest
 
       - name: Run tests
