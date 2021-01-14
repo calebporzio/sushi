@@ -88,7 +88,7 @@ trait Sushi
         if (count($rows)) {
             $this->createTable($tableName, $rows[0]);
         } else {
-            $this->createTableWithNoData($tableName, $this->columns);
+            $this->createTableWithNoData($tableName);
         }
 
         static::insert($rows);
@@ -138,36 +138,25 @@ trait Sushi
         });
     }
 
-    public function createTableWithNoData(string $tableName, array $columns)
+    public function createTableWithNoData(string $tableName)
     {
-        static::resolveConnection()->getSchemaBuilder()->create($tableName, function ($table) use ($columns) {
+        static::resolveConnection()->getSchemaBuilder()->create($tableName, function ($table) {
+            $schema = $this->schema;
 
-            // Add the "id" column if it doesn't already exist in the rows.
-            if ($this->incrementing && ! in_array($this->primaryKey, array_keys($columns))) {
+            if ($this->incrementing && ! in_array($this->primaryKey, array_keys($schema))) {
                 $table->increments($this->primaryKey);
             }
 
-            foreach ($columns as $column => $type) {
-
-                $type = strtolower($type);
-
-                if (! in_array($type, ['integer', 'float', 'string', 'dateTime'], true)) {
-                    $type = 'string';
-                }
-
-                if ($column === $this->primaryKey && $type == 'integer') {
+            foreach ($schema as $name => $type) {
+                if ($name === $this->primaryKey && $type == 'integer') {
                     $table->increments($this->primaryKey);
                     continue;
                 }
 
-                $schema = $this->getSchema();
-
-                $type = $schema[$column] ?? $type;
-
-                $table->{$type}($column)->nullable();
+                $table->{$type}($name)->nullable();
             }
 
-            if ($this->usesTimestamps() && (! in_array('updated_at', array_keys($columns)) || ! in_array('created_at', array_keys($columns)))) {
+            if ($this->usesTimestamps() && (! in_array('updated_at', array_keys($schema)) || ! in_array('created_at', array_keys($schema)))) {
                 $table->timestamps();
             }
         });
