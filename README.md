@@ -143,3 +143,28 @@ class Role extends Model
     }
 }
 ```
+### Handling Empty Datasets
+Sushi reads the takes the first row in your dataset to calculate the structure of the SQLite table. If you are using `getRows()` and this returns an empty array (e.g an API returns nothing back) then Sushi would throw an error.
+
+If you would like Sushi to work even if the dataset is empty, you can define an optional `protected $columns` array. To map out the columns Sushi should expect.
+
+> Note: The supported data types are `integer`, `float`, `string`, and `dateTime`. If you enter an unknown data type, it will default to `string`.
+
+```php
+class Currency extends Model
+{
+    use \Sushi\Sushi;
+
+    protected $columns = [
+        'id' => 'integer',
+        'name' => 'string',
+        'symbol' => 'string',
+        'precision' => 'float'
+    ];
+    
+    public function getRows()
+    {
+        return [];
+    }
+}
+```

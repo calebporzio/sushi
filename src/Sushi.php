@@ -83,9 +83,19 @@ trait Sushi
     public function migrate()
     {
         $rows = $this->getRows();
-        $firstRow = $rows[0];
         $tableName = $this->getTable();
 
+        if (count($rows)) {
+            $this->createTable($tableName, $rows[0]);
+        } else {
+            $this->createTableWithNoData($tableName, $this->columns);
+        }
+
+        static::insert($rows);
+    }
+
+    public function createTable(string $tableName, $firstRow)
+    {
         static::resolveConnection()->getSchemaBuilder()->create($tableName, function ($table) use ($firstRow) {
             // Add the "id" column if it doesn't already exist in the rows.
             if ($this->incrementing && ! in_array($this->primaryKey, array_keys($firstRow))) {
@@ -126,8 +136,41 @@ trait Sushi
                 $table->timestamps();
             }
         });
+    }
 
-        static::insert($rows);
+    public function createTableWithNoData(string $tableName, array $columns)
+    {
+        static::resolveConnection()->getSchemaBuilder()->create($tableName, function ($table) use ($columns) {
+
+            // Add the "id" column if it doesn't already exist in the rows.
+            if ($this->incrementing && ! in_array($this->primaryKey, array_keys($columns))) {
+                $table->increments($this->primaryKey);
+            }
+
+            foreach ($columns as $column => $type) {
+
+                $type = strtolower($type);
+
+                if (! in_array($type, ['integer', 'float', 'string', 'dateTime'], true)) {
+                    $type = 'string';
+                }
+
+                if ($column === $this->primaryKey && $type == 'integer') {
+                    $table->increments($this->primaryKey);
+                    continue;
+                }
+
+                $schema = $this->getSchema();
+
+                $type = $schema[$column] ?? $type;
+
+                $table->{$type}($column)->nullable();
+            }
+
+            if ($this->usesTimestamps() && (! in_array('updated_at', array_keys($columns)) || ! in_array('created_at', array_keys($columns)))) {
+                $table->timestamps();
+            }
+        });
     }
 
     public function usesTimestamps()
