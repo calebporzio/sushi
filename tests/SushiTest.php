@@ -109,6 +109,7 @@ class SushiTest extends TestCase
     /** @test */
     function adds_primary_key_if_needed()
     {
+        $this->assertEquals([5,6], FooWithKey::orderBy('id')->pluck('id')->toArray());
         $this->assertEquals(1, Foo::find(1)->getKey());
     }
 }
@@ -133,6 +134,16 @@ class Foo extends Model
     {
         static::$sushiConnection = $connection;
     }
+}
+
+class FooWithKey extends Model
+{
+    use \Sushi\Sushi;
+
+    protected $rows = [
+        ['id' => 5, 'foo' => 'bar', 'bob' => 'lob'],
+        ['id' => 6, 'foo' => 'baz', 'bob' => 'law'],
+    ];
 }
 
 class ModelWithVaryingTypeColumns extends Model
