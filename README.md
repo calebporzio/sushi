@@ -10,6 +10,8 @@ Now that we've reached the goal, the package is fully open source.
 
 Enjoy, and thanks for the support! ❤️
 
+Learn more about **Sponsorware** at [github.com/sponsorware/docs](https://github.com/sponsorware/docs) 💰.
+
 ## Install
 ```
 composer require calebporzio/sushi
@@ -95,6 +97,26 @@ User::with('role')->first();
 ```
 
 > Note: There is one caveat when dealing with Sushi model relationships. The `whereHas` method will NOT work. This is because the two models are spread across two separate databases.
+
+### Custom Schema
+If Sushi's schema auto-detection system doesn't meet your specific requirements for the supplied row data, you can customize them with the `$schema` property or the `getSchema()` method.
+
+```php
+class Products extends Model
+{
+    use \Sushi\Sushi;
+
+    protected $rows = [
+        ['name' => 'Lawn Mower', 'price' => '226.99'],
+        ['name' => 'Leaf Blower', 'price' => '134.99'],
+        ['name' => 'Rake', 'price' => '9.99'],
+    ];
+
+    protected $schema = [
+        'price' => 'float',
+    ];
+}
+```
 
 ## How It Works
 Under the hood, this package creates and caches a SQLite database JUST for this model. It creates a table and populates the rows. If, for whatever reason, it can't cache a .sqlite file, it will default to using an in-memory sqlite database.

@@ -33,12 +33,33 @@ class SushiTest extends TestCase
     /** @test */
     function basic_usage()
     {
-        $this->assertEquals(2, Foo::count());
+        $this->assertEquals(3, Foo::count());
         $this->assertEquals('bar', Foo::first()->foo);
         $this->assertEquals('lob', Foo::whereBob('lob')->first()->bob);
-        $this->assertEquals(2, Bar::count());
+        $this->assertEquals(3, Bar::count());
         $this->assertEquals('bar', Bar::first()->foo);
         $this->assertEquals('lob', Bar::whereBob('lob')->first()->bob);
+    }
+
+    /** @test */
+    function columns_with_varying_types()
+    {
+        $row = ModelWithVaryingTypeColumns::first();
+        $connectionBuilder = ModelWithVaryingTypeColumns::resolveConnection()->getSchemaBuilder();
+        $this->assertEquals('integer', $connectionBuilder->getColumnType('model_with_varying_type_columns', 'int'));
+        $this->assertEquals('float', $connectionBuilder->getColumnType('model_with_varying_type_columns', 'float'));
+        $this->assertEquals('datetime', $connectionBuilder->getColumnType('model_with_varying_type_columns', 'dateTime'));
+        $this->assertEquals('string', $connectionBuilder->getColumnType('model_with_varying_type_columns', 'string'));
+        $this->assertEquals(null, $row->null);
+    }
+
+    /** @test */
+    function model_with_custom_schema()
+    {
+        ModelWithCustomSchema::count();
+        $connectionBuilder = ModelWithCustomSchema::resolveConnection()->getSchemaBuilder();
+        $this->assertEquals('string', $connectionBuilder->getColumnType('model_with_custom_schemas', 'float'));
+        $this->assertEquals('string', $connectionBuilder->getColumnType('model_with_custom_schemas', 'string'));
     }
 
     /** @test */
@@ -69,7 +90,7 @@ class SushiTest extends TestCase
         $this->assertTrue(file_exists($this->cachePath));
         $this->assertStringContainsString(
             'sushi/tests/cache/sushi-tests-foo.sqlite',
-            (new Foo)->getConnection()->getDatabaseName()
+            str_replace('\\', '/', (new Foo())->getConnection()->getDatabaseName())
         );
     }
 
@@ -91,7 +112,6 @@ class SushiTest extends TestCase
         $this->assertEquals([5,6], FooWithKey::orderBy('id')->pluck('id')->toArray());
         $this->assertEquals(1, Foo::find(1)->getKey());
     }
-
 }
 
 class Foo extends Model
@@ -123,6 +143,35 @@ class FooWithKey extends Model
     protected $rows = [
         ['id' => 5, 'foo' => 'bar', 'bob' => 'lob'],
         ['id' => 6, 'foo' => 'baz', 'bob' => 'law'],
+    ];
+}
+
+class ModelWithVaryingTypeColumns extends Model
+{
+    use \Sushi\Sushi;
+
+    public function getRows() {
+        return [[
+            'int' => 123,
+            'float' => 123.456,
+            'datetime' => \Carbon\Carbon::parse('January 1 2020'),
+            'string' => 'bar',
+            'null' => null,
+        ]];
+    }
+}
+
+class ModelWithCustomSchema extends Model
+{
+    use \Sushi\Sushi;
+
+    protected $rows = [[
+        'float' => 123.456,
+        'string' => 'foo',
+    ]];
+
+    protected $schema = [
+        'float' => 'string',
     ];
 }
 
