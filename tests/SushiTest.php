@@ -116,6 +116,16 @@ class SushiTest extends TestCase
         $this->assertEquals([5,6], ModelWithNonStandardKeys::orderBy('id')->pluck('id')->toArray());
         $this->assertEquals(1, Foo::find(1)->getKey());
     }
+
+    /** @test */
+    function doesnt_assume_an_existing_cache_is_a_valid_cache()
+    {
+        $existingCache = $this->cachePath.'/sushi-tests-foo.sqlite';
+        file_put_contents($existingCache, '');
+        $this->assertTrue(file_exists($existingCache));
+
+        $this->assertEquals(3, Foo::count());
+    }
 }
 
 class Foo extends Model
