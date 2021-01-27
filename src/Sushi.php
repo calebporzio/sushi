@@ -4,6 +4,7 @@ namespace Sushi;
 
 use Illuminate\Database\Connectors\ConnectionFactory;
 use Illuminate\Support\Str;
+use PDOException;
 
 trait Sushi
 {
@@ -34,8 +35,13 @@ trait Sushi
         $modelPath = (new \ReflectionClass(static::class))->getFileName();
 
         $states = [
-            'cache-file-found-and-up-to-date' => function () use ($cachePath) {
-                static::setSqliteConnection($cachePath);
+            'cache-file-found-and-up-to-date' => function () use ($cachePath, $instance) {
+                try {
+                    static::setSqliteConnection($cachePath);
+                    $instance->count();
+                } catch (PDOException $e) {
+                    $instance->migrate();
+                }
             },
             'cache-file-not-found-or-stale' => function () use ($cachePath, $modelPath, $instance) {
                 file_put_contents($cachePath, '');
