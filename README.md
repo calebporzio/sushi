@@ -148,6 +148,8 @@ Sushi reads the first row in your dataset to work out the scheme of the SQLite t
 
 If you would like Sushi to work even if the dataset is empty, you can define your schema in the optional `protected $schema` array. 
 
+> Note: If you choose to use your own ->getRows() method, the rows will NOT be cached between requests.
+
 ```php
 class Currency extends Model
 {
