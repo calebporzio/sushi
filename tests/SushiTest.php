@@ -16,6 +16,10 @@ class SushiTest extends TestCase
 
         config(['sushi.cache-path' => $this->cachePath = __DIR__ . '/cache']);
 
+        if (! file_exists($this->cachePath)) {
+            mkdir($this->cachePath, 0777, true);
+        }
+
         Foo::resetStatics();
         Bar::resetStatics();
         File::cleanDirectory($this->cachePath);
@@ -36,7 +40,7 @@ class SushiTest extends TestCase
         $this->assertEquals(3, Foo::count());
         $this->assertEquals('bar', Foo::first()->foo);
         $this->assertEquals('lob', Foo::whereBob('lob')->first()->bob);
-        $this->assertEquals(3, Bar::count());
+        $this->assertEquals(2, Bar::count());
         $this->assertEquals('bar', Bar::first()->foo);
         $this->assertEquals('lob', Bar::whereBob('lob')->first()->bob);
     }
@@ -109,6 +113,7 @@ class SushiTest extends TestCase
     /** @test */
     function adds_primary_key_if_needed()
     {
+        $this->assertEquals([5,6], ModelWithNonStandardKeys::orderBy('id')->pluck('id')->toArray());
         $this->assertEquals(1, Foo::find(1)->getKey());
     }
 
@@ -140,6 +145,16 @@ class Foo extends Model
     {
         static::$sushiConnection = $connection;
     }
+}
+
+class ModelWithNonStandardKeys extends Model
+{
+    use \Sushi\Sushi;
+
+    protected $rows = [
+        ['id' => 5, 'foo' => 'bar', 'bob' => 'lob'],
+        ['id' => 6, 'foo' => 'baz', 'bob' => 'law'],
+    ];
 }
 
 class ModelWithVaryingTypeColumns extends Model
