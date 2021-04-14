@@ -14,7 +14,7 @@ class SushiTest extends TestCase
     {
         parent::setUp();
 
-        config(['sushi.cache-path' => $this->cachePath = __DIR__.'/cache']);
+        config(['sushi.cache-path' => $this->cachePath = __DIR__ . '/cache']);
 
         if (! file_exists($this->cachePath)) {
             mkdir($this->cachePath, 0777, true);
@@ -78,7 +78,7 @@ class SushiTest extends TestCase
     /** @test */
     function uses_in_memory_if_the_cache_directory_is_not_writeable_or_not_found()
     {
-        config(['sushi.cache-path' => $path = __DIR__.'/non-existant-path']);
+        config(['sushi.cache-path' => $path = __DIR__ . '/non-existant-path']);
 
         Foo::count();
 
@@ -115,6 +115,13 @@ class SushiTest extends TestCase
     {
         $this->assertEquals([5,6], ModelWithNonStandardKeys::orderBy('id')->pluck('id')->toArray());
         $this->assertEquals(1, Foo::find(1)->getKey());
+    }
+
+
+    /** @test */
+    function it_returns_an_empty_collection()
+    {
+        $this->assertEquals(0, Blank::count());
     }
 }
 
@@ -154,7 +161,8 @@ class ModelWithVaryingTypeColumns extends Model
 {
     use \Sushi\Sushi;
 
-    public function getRows() {
+    public function getRows()
+    {
         return [[
             'int' => 123,
             'float' => 123.456,
@@ -218,4 +226,16 @@ class Bar extends Model
 class Baz extends Model
 {
     use \Sushi\Sushi;
+}
+
+class Blank extends Model
+{
+    use \Sushi\Sushi;
+
+    protected $columns = [
+        'id' => 'integer',
+        'name' => 'string'
+    ];
+
+    protected $rows = [];
 }

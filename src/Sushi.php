@@ -83,9 +83,23 @@ trait Sushi
     public function migrate()
     {
         $rows = $this->getRows();
-        $firstRow = $rows[0];
         $tableName = $this->getTable();
 
+        if (count($rows)) {
+            $this->createTable($tableName, $rows[0]);
+        } else {
+            $this->createTableWithNoData($tableName);
+        }
+
+        foreach (array_chunk($rows, 100) ?? [] as $inserts) {
+            if (!empty($inserts)) {
+                static::insert($inserts);
+            }
+        }
+    }
+
+    public function createTable(string $tableName, $firstRow)
+    {
         static::resolveConnection()->getSchemaBuilder()->create($tableName, function ($table) use ($firstRow) {
             // Add the "id" column if it doesn't already exist in the rows.
             if ($this->incrementing && ! array_key_exists($this->primaryKey, $firstRow)) {
@@ -126,12 +140,30 @@ trait Sushi
                 $table->timestamps();
             }
         });
+    }
 
-        foreach (array_chunk($rows, 100) ?? [] as $inserts) {
-            if (!empty($inserts)) {
-                static::insert($inserts);
+    public function createTableWithNoData(string $tableName)
+    {
+        static::resolveConnection()->getSchemaBuilder()->create($tableName, function ($table) {
+            $schema = $this->schema;
+
+            if ($this->incrementing && ! in_array($this->primaryKey, array_keys($schema))) {
+                $table->increments($this->primaryKey);
             }
-        }
+
+            foreach ($schema as $name => $type) {
+                if ($name === $this->primaryKey && $type == 'integer') {
+                    $table->increments($this->primaryKey);
+                    continue;
+                }
+
+                $table->{$type}($name)->nullable();
+            }
+
+            if ($this->usesTimestamps() && (! in_array('updated_at', array_keys($schema)) || ! in_array('created_at', array_keys($schema)))) {
+                $table->timestamps();
+            }
+        });
     }
 
     public function usesTimestamps()

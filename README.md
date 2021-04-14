@@ -143,3 +143,28 @@ class Role extends Model
     }
 }
 ```
+### Handling Empty Datasets
+Sushi reads the first row in your dataset to work out the scheme of the SQLite table. If you are using `getRows()` and this returns an empty array (e.g an API returns nothing back) then Sushi would throw an error.
+
+If you would like Sushi to work even if the dataset is empty, you can define your schema in the optional `protected $schema` array. 
+
+> Note: If you choose to use your own ->getRows() method, the rows will NOT be cached between requests.
+
+```php
+class Currency extends Model
+{
+    use \Sushi\Sushi;
+
+    protected $schema = [
+        'id' => 'integer',
+        'name' => 'string',
+        'symbol' => 'string',
+        'precision' => 'float'
+    ];
+    
+    public function getRows()
+    {
+        return [];
+    }
+}
+```
