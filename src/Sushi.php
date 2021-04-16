@@ -145,7 +145,7 @@ trait Sushi
     public function createTableWithNoData(string $tableName)
     {
         static::resolveConnection()->getSchemaBuilder()->create($tableName, function ($table) {
-            $schema = $this->schema;
+            $schema = $this->getSchema();
 
             if ($this->incrementing && ! in_array($this->primaryKey, array_keys($schema))) {
                 $table->increments($this->primaryKey);
