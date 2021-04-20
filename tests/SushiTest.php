@@ -132,7 +132,7 @@ class SushiTest extends TestCase
     }
 
     /** @test */
-    public function can_use_exists_validation_rule()
+    function can_use_exists_validation_rule()
     {
         ModelWithNonStandardKeys::boot();
 
