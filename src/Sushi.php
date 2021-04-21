@@ -74,10 +74,14 @@ trait Sushi
 
     protected static function setSqliteConnection($database)
     {
-        static::$sushiConnection = app(ConnectionFactory::class)->make([
+        $config = [
             'driver' => 'sqlite',
             'database' => $database,
-        ]);
+        ];
+
+        static::$sushiConnection = app(ConnectionFactory::class)->make($config);
+
+        app('config')->set('database.connections.sushi', $config);
     }
 
     public function migrate()

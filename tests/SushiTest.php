@@ -4,6 +4,7 @@ namespace Tests;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Validator;
 use Orchestra\Testbench\TestCase;
 
 class SushiTest extends TestCase
@@ -99,7 +100,7 @@ class SushiTest extends TestCase
     }
 
     /**
-     * @test 
+     * @test
      * @group skipped
      * */
     function uses_same_cache_between_requests()
@@ -108,7 +109,7 @@ class SushiTest extends TestCase
     }
 
     /**
-     * @test 
+     * @test
      * @group skipped
      * */
     function use_same_cache_between_requests()
@@ -128,6 +129,24 @@ class SushiTest extends TestCase
     function it_returns_an_empty_collection()
     {
         $this->assertEquals(0, Blank::count());
+    }
+
+    /** @test */
+    function can_use_exists_validation_rule()
+    {
+        ModelWithNonStandardKeys::boot();
+
+        $this->assertTrue(Validator::make(['bob' => 'lob'], ['bob' => 'exists:sushi.model_with_non_standard_keys'])->passes());
+        $this->assertTrue(Validator::make(['bob' => 'lob'], ['bob' => 'exists:sushi.model_with_non_standard_keys'])->passes());
+        (int) explode('.', app()->version())[0] >= 6
+            ? $this->assertTrue(Validator::make(['foo' => 5], ['foo' => 'exists:sushi.Tests\ModelWithNonStandardKeys,id'])->passes())
+            : $this->assertTrue(Validator::make(['foo' => 5], ['foo' => 'exists:sushi.model_with_non_standard_keys,id'])->passes());
+
+        $this->assertFalse(Validator::make(['id' => 4], ['id' => 'exists:sushi.model_with_non_standard_keys'])->passes());
+        $this->assertFalse(Validator::make(['id' => 6], ['id' => 'exists:sushi.model_with_non_standard_keys,bob'])->passes());
+        (int) explode('.', app()->version())[0] >= 6
+            ? $this->assertFalse(Validator::make(['bob' => 'ble'], ['bob' => 'exists:sushi.Tests\ModelWithNonStandardKeys'])->passes())
+            : $this->assertFalse(Validator::make(['bob' => 'ble'], ['bob' => 'exists:sushi.model_with_non_standard_keys'])->passes());
     }
 }
 
