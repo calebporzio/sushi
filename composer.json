@@ -34,7 +34,7 @@
     },
     "extra": {
         "laravel": {
-            "providers": ["Sushi\\SushiServiceProvider"],
+            "providers": ["Sushi\\SushiServiceProvider"]
         }
     },
     "minimum-stability": "dev",
