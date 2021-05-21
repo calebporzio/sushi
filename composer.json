@@ -32,6 +32,11 @@
     "config": {
         "sort-packages": true
     },
+    "extra": {
+        "laravel": {
+            "providers": ["Sushi\\SushiServiceProvider"],
+        }
+    },
     "minimum-stability": "dev",
     "prefer-stable": true
 }
