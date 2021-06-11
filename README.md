@@ -99,7 +99,13 @@ User::with('role')->first();
 > Note: There is one caveat when dealing with Sushi model relationships. The `whereHas` method will NOT work. This is because the two models are spread across two separate databases.
 
 ### Validation
-Since v2.3.0, If you want to use the `exists` validation rule with Sushi, you must prefix the table name with `sushi` so that `exists:countries` becomes `exists:sushi.countries`.
+Since v2.3.0, you may use the `exists` validation rule with Sushi but you must prefix the table name with `sushi.`.
+
+```php
+$request->validate([
+    'role_id' => ['exists:sushi.role,name']
+]);
+```
 
 ### Custom Schema
 If Sushi's schema auto-detection system doesn't meet your specific requirements for the supplied row data, you can customize them with the `$schema` property or the `getSchema()` method.
