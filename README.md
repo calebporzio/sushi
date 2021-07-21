@@ -168,3 +168,10 @@ class Currency extends Model
     }
 }
 ```
+
+### Troubleshoot
+
+**ERROR:** `SQLSTATE[HY000]: General error: 1 too many SQL variables`
+
+By default Sushi uses chunks of `100` to insert your data in the SQLite database. In some scenarios this might hit some SQLite limits.
+You can configure the chunk size in the model: `public $sushiInsertChunkSize = 50;`
