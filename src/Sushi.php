@@ -2,7 +2,9 @@
 
 namespace Sushi;
 
+use Closure;
 use Illuminate\Database\Connectors\ConnectionFactory;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Str;
 
 trait Sushi
@@ -104,7 +106,7 @@ trait Sushi
 
     public function createTable(string $tableName, $firstRow)
     {
-        static::resolveConnection()->getSchemaBuilder()->create($tableName, function ($table) use ($firstRow) {
+        $this->createTableSafely($tableName, function ($table) use ($firstRow) {
             // Add the "id" column if it doesn't already exist in the rows.
             if ($this->incrementing && ! array_key_exists($this->primaryKey, $firstRow)) {
                 $table->increments($this->primaryKey);
@@ -148,7 +150,7 @@ trait Sushi
 
     public function createTableWithNoData(string $tableName)
     {
-        static::resolveConnection()->getSchemaBuilder()->create($tableName, function ($table) {
+        $this->createTableSafely($tableName, function ($table) {
             $schema = $this->getSchema();
 
             if ($this->incrementing && ! in_array($this->primaryKey, array_keys($schema))) {
@@ -168,6 +170,25 @@ trait Sushi
                 $table->timestamps();
             }
         });
+    }
+
+    protected function createTableSafely(string $tableName, Closure $callback)
+    {
+        /** @var \Illuminate\Database\Schema\SQLiteBuilder $schemaBuilder */
+        $schemaBuilder = static::resolveConnection()->getSchemaBuilder();
+
+        try {
+            $schemaBuilder->create($tableName, $callback);
+        } catch (QueryException $e) {
+            if (Str::contains($e->getMessage(), 'already exists (SQL: create table')) {
+                // This error can happen in rare circumstances due to a race condition.
+                // Concurrent requests may both see the necessary preconditions for
+                // the table creation, but only one can actually succeed.
+                return;
+            }
+
+            throw $e;
+        }
     }
 
     public function usesTimestamps()

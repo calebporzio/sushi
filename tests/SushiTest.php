@@ -2,6 +2,7 @@
 
 namespace Tests;
 
+use Illuminate\Database\Connectors\ConnectionFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Validator;
@@ -97,6 +98,37 @@ class SushiTest extends TestCase
             'sushi/tests/cache/sushi-tests-foo.sqlite',
             str_replace('\\', '/', (new Foo())->getConnection()->getDatabaseName())
         );
+    }
+
+    /** @test */
+    function avoids_error_when_creating_database_concurrently()
+    {
+        $actualFactory = app(ConnectionFactory::class);
+        $actualConnection = $actualFactory->make([
+            'driver' => 'sqlite',
+            'database' => ':memory:',
+        ]);
+
+        $connectionFactory = $this->createMock(ConnectionFactory::class);
+        $connectionFactory->expects($this->once())
+            ->method('make')
+            ->willReturnCallback(function () use ($actualConnection) {
+                // Simulate a concurrent request that creates the table at a point in time
+                // where our main execution has already determined that it does not exist
+                // and is about to create it.
+                $actualConnection->getSchemaBuilder()->create('blanks', function ($table) {
+                    $table->increments('id');
+                });
+
+                return $actualConnection;
+            });
+
+        $this->app->bind(ConnectionFactory::class, function () use ($connectionFactory) {
+            return $connectionFactory;
+        });
+
+        // Triggers creation of the table
+        (new Blank)->getConnection();
     }
 
     /**
