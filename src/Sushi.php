@@ -31,7 +31,7 @@ trait Sushi
         $cacheFileName = config('sushi.cache-prefix', 'sushi').'-'.Str::kebab(str_replace('\\', '', static::class)).'.sqlite';
         $cacheDirectory = realpath(config('sushi.cache-path', storage_path('framework/cache')));
         $cachePath = $cacheDirectory.'/'.$cacheFileName;
-        $dataPath = $this->getDataPath();
+        $dataPath = $instance->getDataPath();
 
         $states = [
             'cache-file-found-and-up-to-date' => function () use ($cachePath) {
@@ -54,7 +54,7 @@ trait Sushi
         ];
 
         switch (true) {
-            case ! $this->isCached():
+            case ! $instance->isCached():
                 $states['no-caching-capabilities']();
                 break;
 
