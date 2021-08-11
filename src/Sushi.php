@@ -19,6 +19,16 @@ trait Sushi
         return $this->schema ?? [];
     }
 
+    protected function sushiCachePath()
+    {
+        return (new \ReflectionClass(static::class))->getFileName();
+    }
+
+    protected function sushiShouldCache()
+    {
+        return property_exists(static::class, 'rows');
+    }
+
     public static function resolveConnection($connection = null)
     {
         return static::$sushiConnection;
@@ -31,7 +41,7 @@ trait Sushi
         $cacheFileName = config('sushi.cache-prefix', 'sushi').'-'.Str::kebab(str_replace('\\', '', static::class)).'.sqlite';
         $cacheDirectory = realpath(config('sushi.cache-path', storage_path('framework/cache')));
         $cachePath = $cacheDirectory.'/'.$cacheFileName;
-        $dataPath = $instance->getDataPath();
+        $dataPath = $instance->sushiCachePath();
 
         $states = [
             'cache-file-found-and-up-to-date' => function () use ($cachePath) {
@@ -54,7 +64,7 @@ trait Sushi
         ];
 
         switch (true) {
-            case ! $instance->isCached():
+            case ! $instance->sushiShouldCache():
                 $states['no-caching-capabilities']();
                 break;
 
@@ -176,15 +186,5 @@ trait Sushi
         return (new \ReflectionClass($this))->getProperty('timestamps')->class === static::class
             ? parent::usesTimestamps()
             : false;
-    }
-    
-    protected function getDataPath(): string
-    {
-        return (new \ReflectionClass(static::class))->getFileName();
-    }
-    
-    protected function isCached(): bool
-    {
-        return property_exists(static::class, 'rows');
     }
 }
