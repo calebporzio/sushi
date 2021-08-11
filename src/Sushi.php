@@ -31,20 +31,20 @@ trait Sushi
         $cacheFileName = config('sushi.cache-prefix', 'sushi').'-'.Str::kebab(str_replace('\\', '', static::class)).'.sqlite';
         $cacheDirectory = realpath(config('sushi.cache-path', storage_path('framework/cache')));
         $cachePath = $cacheDirectory.'/'.$cacheFileName;
-        $modelPath = (new \ReflectionClass(static::class))->getFileName();
+        $dataPath = $instance->getDataPath();
 
         $states = [
             'cache-file-found-and-up-to-date' => function () use ($cachePath) {
                 static::setSqliteConnection($cachePath);
             },
-            'cache-file-not-found-or-stale' => function () use ($cachePath, $modelPath, $instance) {
+            'cache-file-not-found-or-stale' => function () use ($cachePath, $dataPath, $instance) {
                 file_put_contents($cachePath, '');
 
                 static::setSqliteConnection($cachePath);
 
                 $instance->migrate();
 
-                touch($cachePath, filemtime($modelPath));
+                touch($cachePath, filemtime($dataPath));
             },
             'no-caching-capabilities' => function () use ($instance) {
                 static::setSqliteConnection(':memory:');
@@ -54,11 +54,11 @@ trait Sushi
         ];
 
         switch (true) {
-            case ! property_exists($instance, 'rows'):
+            case ! $instance->isCached():
                 $states['no-caching-capabilities']();
                 break;
 
-            case file_exists($cachePath) && filemtime($modelPath) <= filemtime($cachePath):
+            case file_exists($cachePath) && filemtime($dataPath) <= filemtime($cachePath):
                 $states['cache-file-found-and-up-to-date']();
                 break;
 
@@ -176,5 +176,15 @@ trait Sushi
         return (new \ReflectionClass($this))->getProperty('timestamps')->class === static::class
             ? parent::usesTimestamps()
             : false;
+    }
+    
+    protected function getDataPath(): string
+    {
+        return (new \ReflectionClass(static::class))->getFileName();
+    }
+    
+    protected function isCached(): bool
+    {
+        return property_exists(static::class, 'rows');
     }
 }
