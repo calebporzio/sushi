@@ -105,7 +105,7 @@ trait Sushi
             $this->createTableWithNoData($tableName);
         }
 
-        foreach (array_chunk($rows, 100) ?? [] as $inserts) {
+        foreach (array_chunk($rows, $this->getSushiInsertChunkSize()) ?? [] as $inserts) {
             if (!empty($inserts)) {
                 static::insert($inserts);
             }
@@ -186,5 +186,9 @@ trait Sushi
         return (new \ReflectionClass($this))->getProperty('timestamps')->class === static::class
             ? parent::usesTimestamps()
             : false;
+    }
+
+    public function getSushiInsertChunkSize() {
+        return $this->sushiInsertChunkSize ?? 100;
     }
 }
