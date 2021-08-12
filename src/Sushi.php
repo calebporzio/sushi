@@ -21,7 +21,7 @@ trait Sushi
         return $this->schema ?? [];
     }
 
-    protected function sushiCachePath()
+    protected function sushiModelPath()
     {
         return (new \ReflectionClass(static::class))->getFileName();
     }
@@ -43,7 +43,7 @@ trait Sushi
         $cacheFileName = config('sushi.cache-prefix', 'sushi').'-'.Str::kebab(str_replace('\\', '', static::class)).'.sqlite';
         $cacheDirectory = realpath(config('sushi.cache-path', storage_path('framework/cache')));
         $cachePath = $cacheDirectory.'/'.$cacheFileName;
-        $dataPath = $instance->sushiCachePath();
+        $dataPath = $instance->sushiModelPath();
 
         $states = [
             'cache-file-found-and-up-to-date' => function () use ($cachePath) {

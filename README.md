@@ -126,7 +126,6 @@ You can optionally opt out of using the `protected $rows` property, and directly
 
 This will allow you to determine the rows for the model at runtime. You can even generate the model's rows from an external source like a third-party API.
 
-> Note: If you choose to use your own ->getRows() method, the rows will NOT be cached between requests.
 
 ```php
 class Role extends Model
@@ -143,10 +142,71 @@ class Role extends Model
     }
 }
 ```
+
+### Caching ->getRows()
+
+If you choose to use your own ->getRows() method, the rows will NOT be cached between requests by default.
+
+You can force Sushi to cache your dataset with the following method: `sushiShouldCache()`.
+
+Let's look at a configuration where `->getRows()` datasets would be cached as an example:
+
+```php
+class Role extends Model
+{
+    use \Sushi\Sushi;
+
+    public function getRows()
+    {
+        return [
+            ['id' => 1, 'label' => 'admin'],
+            ['id' => 2, 'label' => 'manager'],
+            ['id' => 3, 'label' => 'user'],
+        ];
+    }
+
+    protected function sushiShouldCache()
+    {
+        return true;
+    }
+}
+```
+
+By default, Sushi looks at the "last modified" timestamp of your model PHP file and compares it with its internal `.sqlite` cache file. If the model file has been changed more recently than the `.sqlite` cache file, then Sushi will destroy and rebuild the `.sqlite` cache.
+Additionally, you can configure an external file for Sushi to reference when determining if the cache is up to date or needs to be refreshed.
+
+If, for example, you are using Sushi to provide an Eloquent model for an external data source file like an `.csv` file, you can use `sushiModelPath` to force Sushi to reference the `.csv` file when determining if the cache is stale.
+
+For example:
+
+```php
+class Role extends Model
+{
+    use \Sushi\Sushi;
+
+    public function getRows()
+    {
+        return CSV::fromFile(__DIR__.'/roles.csv')->toArray();
+    }
+
+    protected function sushiShouldCache()
+    {
+        return true;
+    }
+
+    protected function sushiModelPath()
+    {
+        return __DIR__.'/roles.csv';
+    }
+}
+```
+
+Now, Sushi will only "bust" its internal cache if `roles.csv` changes, rather than looking at the `Role.php` model.
+
 ### Handling Empty Datasets
 Sushi reads the first row in your dataset to work out the scheme of the SQLite table. If you are using `getRows()` and this returns an empty array (e.g an API returns nothing back) then Sushi would throw an error.
 
-If you would like Sushi to work even if the dataset is empty, you can define your schema in the optional `protected $schema` array. 
+If you would like Sushi to work even if the dataset is empty, you can define your schema in the optional `protected $schema` array.
 
 > Note: If you choose to use your own ->getRows() method, the rows will NOT be cached between requests.
 
@@ -161,7 +221,7 @@ class Currency extends Model
         'symbol' => 'string',
         'precision' => 'float'
     ];
-    
+
     public function getRows()
     {
         return [];
