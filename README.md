@@ -175,7 +175,7 @@ class Role extends Model
 By default, Sushi looks at the "last modified" timestamp of your model PHP file and compares it with its internal `.sqlite` cache file. If the model file has been changed more recently than the `.sqlite` cache file, then Sushi will destroy and rebuild the `.sqlite` cache.
 Additionally, you can configure an external file for Sushi to reference when determining if the cache is up to date or needs to be refreshed.
 
-If, for example, you are using Sushi to provide an Eloquent model for an external data source file like an `.csv` file, you can use `sushiModelPath` to force Sushi to reference the `.csv` file when determining if the cache is stale.
+If, for example, you are using Sushi to provide an Eloquent model for an external data source file like an `.csv` file, you can use `sushiCacheReferencePath` to force Sushi to reference the `.csv` file when determining if the cache is stale.
 
 For example:
 
@@ -194,7 +194,7 @@ class Role extends Model
         return true;
     }
 
-    protected function sushiModelPath()
+    protected function sushiCacheReferencePath()
     {
         return __DIR__.'/roles.csv';
     }
