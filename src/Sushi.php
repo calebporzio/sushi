@@ -11,8 +11,6 @@ trait Sushi
 {
     protected static $sushiConnection;
 
-    protected $connection = 'sushi';
-
     public function getRows()
     {
         return $this->rows;
@@ -213,5 +211,10 @@ trait Sushi
 
     public function getSushiInsertChunkSize() {
         return $this->sushiInsertChunkSize ?? 100;
+    }
+
+    public function getConnectionName()
+    {
+        return 'sushi';
     }
 }
