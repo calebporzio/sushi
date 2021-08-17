@@ -11,6 +11,8 @@ trait Sushi
 {
     protected static $sushiConnection;
 
+    protected $connection = 'sushi';
+
     public function getRows()
     {
         return $this->rows;
