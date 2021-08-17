@@ -171,13 +171,13 @@ class SushiTest extends TestCase
         $this->assertTrue(Validator::make(['bob' => 'lob'], ['bob' => 'exists:sushi.model_with_non_standard_keys'])->passes());
         $this->assertTrue(Validator::make(['bob' => 'lob'], ['bob' => 'exists:sushi.model_with_non_standard_keys'])->passes());
         (int) explode('.', app()->version())[0] >= 6
-            ? $this->assertTrue(Validator::make(['foo' => 5], ['foo' => 'exists:sushi.Tests\ModelWithNonStandardKeys,id'])->passes())
+            ? $this->assertTrue(Validator::make(['foo' => 5], ['foo' => 'exists:Tests\ModelWithNonStandardKeys,id'])->passes())
             : $this->assertTrue(Validator::make(['foo' => 5], ['foo' => 'exists:sushi.model_with_non_standard_keys,id'])->passes());
 
         $this->assertFalse(Validator::make(['id' => 4], ['id' => 'exists:sushi.model_with_non_standard_keys'])->passes());
         $this->assertFalse(Validator::make(['id' => 6], ['id' => 'exists:sushi.model_with_non_standard_keys,bob'])->passes());
         (int) explode('.', app()->version())[0] >= 6
-            ? $this->assertFalse(Validator::make(['bob' => 'ble'], ['bob' => 'exists:sushi.Tests\ModelWithNonStandardKeys'])->passes())
+            ? $this->assertFalse(Validator::make(['bob' => 'ble'], ['bob' => 'exists:Tests\ModelWithNonStandardKeys'])->passes())
             : $this->assertFalse(Validator::make(['bob' => 'ble'], ['bob' => 'exists:sushi.model_with_non_standard_keys'])->passes());
     }
 }
