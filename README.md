@@ -98,6 +98,17 @@ User::with('role')->first();
 
 > Note: There is one caveat when dealing with Sushi model relationships. The `whereHas` method will NOT work. This is because the two models are spread across two separate databases.
 
+### Using database-checking validation rules
+You can even use Laravel's `exists:table,column` database checking request validation rule.
+
+```php
+$data = request()->validate([
+    'state' => ['required', 'exists:App\Model\State,abbr'],
+]);
+```
+
+> Note: Be aware that you must use the fully-qualified namespace of the model instead of a table name. This ensures that Laravel will correctly resolve the model's connection.
+
 ### Custom Schema
 If Sushi's schema auto-detection system doesn't meet your specific requirements for the supplied row data, you can customize them with the `$schema` property or the `getSchema()` method.
 
