@@ -166,17 +166,17 @@ class SushiTest extends TestCase
     /** @test */
     function can_use_exists_validation_rule()
     {
-        ModelWithNonStandardKeys::boot();
-        ModelWithVaryingTypeColumns::boot();
+        ModelWithNonStandardKeys::all();
+        Foo::all();
 
         $this->assertTrue(Validator::make(['bob' => 'lob'], ['bob' => 'exists:'.ModelWithNonStandardKeys::class.'.model_with_non_standard_keys'])->passes());
-        $this->assertTrue(Validator::make(['string' => 'bar'], ['string' => 'exists:'.ModelWithVaryingTypeColumns::class.'.model_with_varying_type_columns'])->passes());
+        $this->assertTrue(Validator::make(['foo' => 'bar'], ['foo' => 'exists:'.Foo::class.'.foos'])->passes());
         (int) explode('.', app()->version())[0] >= 6
             ? $this->assertTrue(Validator::make(['foo' => 5], ['foo' => 'exists:'.ModelWithNonStandardKeys::class.',id'])->passes())
             : $this->assertTrue(Validator::make(['foo' => 5], ['foo' => 'exists:'.ModelWithNonStandardKeys::class.'.model_with_non_standard_keys,id'])->passes());
 
         $this->assertFalse(Validator::make(['id' => 4], ['id' => 'exists:'.ModelWithNonStandardKeys::class.'.model_with_non_standard_keys'])->passes());
-        $this->assertFalse(Validator::make(['string' => 'baz'], ['string' => 'exists:'.ModelWithVaryingTypeColumns::class.'.model_with_varying_type_columns'])->passes());
+        $this->assertFalse(Validator::make(['foo' => 'bob'], ['foo' => 'exists:'.Foo::class.'.foos'])->passes());
         (int) explode('.', app()->version())[0] >= 6
             ? $this->assertFalse(Validator::make(['bob' => 'ble'], ['bob' => 'exists:'.ModelWithNonStandardKeys::class])->passes())
             : $this->assertFalse(Validator::make(['bob' => 'ble'], ['bob' => 'exists:'.ModelWithNonStandardKeys::class.'.model_with_non_standard_keys'])->passes());
