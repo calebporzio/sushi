@@ -240,6 +240,26 @@ class Currency extends Model
 }
 ```
 
+### Handling String-based Primary Keys
+Sushi requires you to add two properties to your model, if it uses a string-based primary key - `$incrementing` and `$keyType`:
+
+```php
+class Role extends Model
+{
+    use \Sushi\Sushi;
+    
+    public $incrementing = false;
+
+    protected $keyType = 'string';
+
+    protected $rows = [
+        ['id' => 'admin', 'label' => 'Admin'],
+        ['id' => 'manager', 'label' => 'Manager'],
+        ['id' => 'user', 'label' => 'User'],
+    ];
+}
+```
+
 ### Troubleshoot
 
 **ERROR:** `SQLSTATE[HY000]: General error: 1 too many SQL variables`
