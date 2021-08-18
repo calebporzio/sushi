@@ -93,7 +93,7 @@ trait Sushi
 
         static::$sushiConnection = app(ConnectionFactory::class)->make($config);
 
-        app('config')->set('database.connections.sushi', $config);
+        app('config')->set('database.connections.'.static::class, $config);
     }
 
     public function migrate()
@@ -211,5 +211,10 @@ trait Sushi
 
     public function getSushiInsertChunkSize() {
         return $this->sushiInsertChunkSize ?? 100;
+    }
+
+    public function getConnectionName()
+    {
+        return static::class;
     }
 }
