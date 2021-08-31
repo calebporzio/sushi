@@ -181,6 +181,33 @@ class SushiTest extends TestCase
             ? $this->assertFalse(Validator::make(['bob' => 'ble'], ['bob' => 'exists:'.ModelWithNonStandardKeys::class])->passes())
             : $this->assertFalse(Validator::make(['bob' => 'ble'], ['bob' => 'exists:'.ModelWithNonStandardKeys::class.'.model_with_non_standard_keys'])->passes());
     }
+
+    /** 
+     * @test 
+     * @define-env usesSqliteConnection
+     * */
+    function sushi_models_can_relate_to_models_in_regular_sqlite_databases()
+    {
+        $this->loadMigrationsFrom(__DIR__ . '/database/migrations');
+        $this->artisan('migrate', ['--database' => 'testbench-sqlite'])->run();
+
+        $californiaMaki = Maki::create(['id' => 1, 'type' => 'California']);
+
+        $this->assertEquals(1, Ingredient::find(1)->maki->id);
+        $this->assertCount(2, $californiaMaki->ingredients);
+    }
+
+    protected function usesSqliteConnection($app)
+    {
+        file_put_contents(__DIR__ . '/database/database.sqlite', '');
+
+        $app['config']->set('database.default', 'testbench-sqlite');
+        $app['config']->set('database.connections.testbench-sqlite', [
+            'driver'   => 'sqlite',
+            'database' => __DIR__ . '/database/database.sqlite',
+            'prefix'   => '',
+        ]);
+    }
 }
 
 class Foo extends Model
@@ -296,4 +323,30 @@ class Blank extends Model
     ];
 
     protected $rows = [];
+}
+
+class Maki extends Model
+{
+    protected $guarded = [];
+    public $timestamps = false;
+
+    public function ingredients()
+    {
+        return $this->hasMany(Ingredient::class);
+    }
+}
+
+class Ingredient extends Model
+{
+    use \Sushi\Sushi;
+
+    protected $rows = [
+        ['id' => 1, 'type' => 'salmon', 'maki_id' => 1],
+        ['id' => 2, 'type' => 'avocado', 'maki_id' => 1],
+    ];
+
+    public function maki()
+    {
+        return $this->belongsTo(Maki::class);
+    }
 }
