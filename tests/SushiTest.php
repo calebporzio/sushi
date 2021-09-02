@@ -309,20 +309,20 @@ class Qux extends Model
     use \Sushi\Sushi;
 
     protected $rows = [
-        ['id' => 1, 'quz_id' => 1],
+        ['id' => 1],
     ];
 
-    public function quz() : BelongsTo
+    public function quz() : HasOne
     {
-        return $this->belongsTo(Quz::class);
+        return $this->hasOne(Quz::class);
     }
 }
 
 
 class Quz extends Model
 {
-    public function qux() : HasOne
+    public function qux() : BelongsTo
     {
-        return $this->hasOne(Qux::class);
+        return $this->belongsTo(Qux::class);
     }
 }
