@@ -84,6 +84,12 @@ trait Sushi
         }
     }
 
+    public static function getSlug()
+    {
+        $slug = Str::slug(str_replace('\\', '-', static::class));
+        return 'sushi-'.$slug;
+    }
+
     protected static function setSqliteConnection($database)
     {
         $config = [
@@ -93,7 +99,7 @@ trait Sushi
 
         static::$sushiConnection = app(ConnectionFactory::class)->make($config);
 
-        app('config')->set('database.connections.'.static::class, $config);
+        app('config')->set('database.connections.'.static::getSlug(), $config);
     }
 
     public function migrate()
@@ -209,12 +215,8 @@ trait Sushi
             : false;
     }
 
-    public function getSushiInsertChunkSize() {
-        return $this->sushiInsertChunkSize ?? 100;
-    }
-
-    public function getConnectionName()
+    public function getSushiInsertChunkSize()
     {
-        return static::class;
+        return $this->sushiInsertChunkSize ?? 100;
     }
 }

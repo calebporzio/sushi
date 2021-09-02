@@ -4,6 +4,8 @@ namespace Tests;
 
 use Illuminate\Database\Connectors\ConnectionFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Validator;
 use Orchestra\Testbench\TestCase;
@@ -37,7 +39,7 @@ class SushiTest extends TestCase
     }
 
     /** @test */
-    function basic_usage()
+    public function basic_usage()
     {
         $this->assertEquals(3, Foo::count());
         $this->assertEquals('bar', Foo::first()->foo);
@@ -48,7 +50,7 @@ class SushiTest extends TestCase
     }
 
     /** @test */
-    function columns_with_varying_types()
+    public function columns_with_varying_types()
     {
         $row = ModelWithVaryingTypeColumns::first();
         $connectionBuilder = ModelWithVaryingTypeColumns::resolveConnection()->getSchemaBuilder();
@@ -60,7 +62,7 @@ class SushiTest extends TestCase
     }
 
     /** @test */
-    function model_with_custom_schema()
+    public function model_with_custom_schema()
     {
         ModelWithCustomSchema::count();
         $connectionBuilder = ModelWithCustomSchema::resolveConnection()->getSchemaBuilder();
@@ -69,7 +71,7 @@ class SushiTest extends TestCase
     }
 
     /** @test */
-    function models_using_the_get_rows_property_arent_cached()
+    public function models_using_the_get_rows_property_arent_cached()
     {
         Bar::$hasBeenAccessedBefore = false;
         $this->assertEquals(2, Bar::count());
@@ -78,7 +80,7 @@ class SushiTest extends TestCase
     }
 
     /** @test */
-    function uses_in_memory_if_the_cache_directory_is_not_writeable_or_not_found()
+    public function uses_in_memory_if_the_cache_directory_is_not_writeable_or_not_found()
     {
         config(['sushi.cache-path' => $path = __DIR__ . '/non-existant-path']);
 
@@ -89,7 +91,7 @@ class SushiTest extends TestCase
     }
 
     /** @test */
-    function caches_sqlite_file_if_storage_cache_folder_is_available()
+    public function caches_sqlite_file_if_storage_cache_folder_is_available()
     {
         Foo::count();
 
@@ -101,7 +103,7 @@ class SushiTest extends TestCase
     }
 
     /** @test */
-    function avoids_error_when_creating_database_concurrently()
+    public function avoids_error_when_creating_database_concurrently()
     {
         $actualFactory = app(ConnectionFactory::class);
         $actualConnection = $actualFactory->make([
@@ -135,7 +137,7 @@ class SushiTest extends TestCase
      * @test
      * @group skipped
      * */
-    function uses_same_cache_between_requests()
+    public function uses_same_cache_between_requests()
     {
         $this->markTestSkipped("I can't find a good way to test this right now.");
     }
@@ -144,13 +146,13 @@ class SushiTest extends TestCase
      * @test
      * @group skipped
      * */
-    function use_same_cache_between_requests()
+    public function use_same_cache_between_requests()
     {
         $this->markTestSkipped("I can't find a good way to test this right now.");
     }
 
     /** @test */
-    function adds_primary_key_if_needed()
+    public function adds_primary_key_if_needed()
     {
         $this->assertEquals([5,6], ModelWithNonStandardKeys::orderBy('id')->pluck('id')->toArray());
         $this->assertEquals(1, Foo::find(1)->getKey());
@@ -158,28 +160,32 @@ class SushiTest extends TestCase
 
 
     /** @test */
-    function it_returns_an_empty_collection()
+    public function it_returns_an_empty_collection()
     {
         $this->assertEquals(0, Blank::count());
     }
 
     /** @test */
-    function can_use_exists_validation_rule()
+    public function can_use_exists_validation_rule()
     {
         ModelWithNonStandardKeys::all();
         Foo::all();
 
-        $this->assertTrue(Validator::make(['bob' => 'lob'], ['bob' => 'exists:'.ModelWithNonStandardKeys::class.'.model_with_non_standard_keys'])->passes());
-        $this->assertTrue(Validator::make(['foo' => 'bar'], ['foo' => 'exists:'.Foo::class.'.foos'])->passes());
-        (int) explode('.', app()->version())[0] >= 6
-            ? $this->assertTrue(Validator::make(['foo' => 5], ['foo' => 'exists:'.ModelWithNonStandardKeys::class.',id'])->passes())
-            : $this->assertTrue(Validator::make(['foo' => 5], ['foo' => 'exists:'.ModelWithNonStandardKeys::class.'.model_with_non_standard_keys,id'])->passes());
+        $this->assertTrue(Validator::make(['bob' => 'lob'], ['bob' => 'exists:'.ModelWithNonStandardKeys::getSlug().'.model_with_non_standard_keys'])->passes());
+        $this->assertTrue(Validator::make(['foo' => 'bar'], ['foo' => 'exists:'.Foo::getSlug().'.foos'])->passes());
+        $this->assertTrue(Validator::make(['foo' => 5], ['foo' => 'exists:'.ModelWithNonStandardKeys::getSlug().'.model_with_non_standard_keys,id'])->passes());
 
-        $this->assertFalse(Validator::make(['id' => 4], ['id' => 'exists:'.ModelWithNonStandardKeys::class.'.model_with_non_standard_keys'])->passes());
-        $this->assertFalse(Validator::make(['foo' => 'bob'], ['foo' => 'exists:'.Foo::class.'.foos'])->passes());
-        (int) explode('.', app()->version())[0] >= 6
-            ? $this->assertFalse(Validator::make(['bob' => 'ble'], ['bob' => 'exists:'.ModelWithNonStandardKeys::class])->passes())
-            : $this->assertFalse(Validator::make(['bob' => 'ble'], ['bob' => 'exists:'.ModelWithNonStandardKeys::class.'.model_with_non_standard_keys'])->passes());
+        $this->assertFalse(Validator::make(['id' => 4], ['id' => 'exists:'.ModelWithNonStandardKeys::getSlug().'.model_with_non_standard_keys'])->passes());
+        $this->assertFalse(Validator::make(['foo' => 'bob'], ['foo' => 'exists:'.Foo::getSlug().'.foos'])->passes());
+        $this->assertFalse(Validator::make(['bob' => 'ble'], ['bob' => 'exists:'.ModelWithNonStandardKeys::getSlug().'.model_with_non_standard_keys'])->passes());
+    }
+
+    /** @test */
+    public function can_trigger_through_relations()
+    {
+        $this->expectExceptionMessage("Connection refused");
+
+        Qux::find(1)->quz;
     }
 }
 
@@ -296,4 +302,27 @@ class Blank extends Model
     ];
 
     protected $rows = [];
+}
+
+class Qux extends Model
+{
+    use \Sushi\Sushi;
+
+    protected $rows = [
+        ['id' => 1, 'quz_id' => 1],
+    ];
+
+    public function quz() : BelongsTo
+    {
+        return $this->belongsTo(Quz::class);
+    }
+}
+
+
+class Quz extends Model
+{
+    public function qux() : HasOne
+    {
+        return $this->hasOne(Qux::class);
+    }
 }
