@@ -103,7 +103,7 @@ You can even use Laravel's `exists:table,column` database checking request valid
 
 ```php
 $data = request()->validate([
-    'state' => ['required', 'exists:App\Model\State,abbr'],
+    'state' => ['required', 'exists:App\Models\State,abbr'],
 ]);
 ```
 
