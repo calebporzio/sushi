@@ -4,8 +4,6 @@ namespace Tests;
 
 use Illuminate\Database\Connectors\ConnectionFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Validator;
 use Orchestra\Testbench\TestCase;
@@ -181,11 +179,9 @@ class SushiTest extends TestCase
     }
 
     /** @test */
-    public function can_trigger_through_relations()
+    public function it_returns_collection_for_long_standing_rows_calls()
     {
-        $this->expectExceptionMessage("Connection refused");
-
-        Qux::find(1)->quz;
+        $this->markTestSkipped("Need async call to test this");
     }
 }
 
@@ -308,21 +304,13 @@ class Qux extends Model
 {
     use \Sushi\Sushi;
 
-    protected $rows = [
-        ['id' => 1],
-    ];
-
-    public function quz() : HasOne
+    public function getRows()
     {
-        return $this->hasOne(Quz::class);
-    }
-}
+        sleep(1);
 
-
-class Quz extends Model
-{
-    public function qux() : BelongsTo
-    {
-        return $this->belongsTo(Qux::class);
+        return [
+            ['foo' => 'bar', 'bob' => 'lob'],
+            ['foo' => 'baz', 'bob' => 'law'],
+        ];
     }
 }

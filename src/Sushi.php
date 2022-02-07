@@ -43,6 +43,7 @@ trait Sushi
         $cacheFileName = config('sushi.cache-prefix', 'sushi').'-'.Str::kebab(str_replace('\\', '', static::class)).'.sqlite';
         $cacheDirectory = realpath(config('sushi.cache-path', storage_path('framework/cache')));
         $cachePath = $cacheDirectory.'/'.$cacheFileName;
+
         $dataPath = $instance->sushiCacheReferencePath();
 
         $states = [
@@ -50,11 +51,9 @@ trait Sushi
                 static::setSqliteConnection($cachePath);
             },
             'cache-file-not-found-or-stale' => function () use ($cachePath, $dataPath, $instance) {
-                file_put_contents($cachePath, '');
-
                 static::setSqliteConnection($cachePath);
 
-                $instance->migrate();
+                $instance->migrate($cachePath);
 
                 touch($cachePath, filemtime($dataPath));
             },
@@ -102,10 +101,14 @@ trait Sushi
         app('config')->set('database.connections.'.static::getSlug(), $config);
     }
 
-    public function migrate()
+    public function migrate($cachePath = null)
     {
         $rows = $this->getRows();
         $tableName = $this->getTable();
+
+        if ($cachePath) {
+            file_put_contents($cachePath, '');
+        }
 
         if (count($rows)) {
             $this->createTable($tableName, $rows[0]);
