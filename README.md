@@ -214,6 +214,38 @@ class Role extends Model
 
 Now, Sushi will only "bust" its internal cache if `roles.csv` changes, rather than looking at the `Role.php` model.
 
+**Note**: By default Sushi will cache the sqlite database file under `storage_path(framework/cache)` with the `kebab-case` name of the class with a `.sqlite` extension and a prefix of `sushi`. To change this behavior you can create a sushi config and/or override the `cacheFileName()` method:
+
+```php
+// config/sushi.php
+<?php
+return [
+    'cache-prefix' => 'my-prefix', // custom
+    'cache-path'   => storage_path('framework/cache'), //default
+];
+```
+
+```php
+class Role extends Model
+{
+    use \Sushi\Sushi;
+
+    protected function sushiShouldCache()
+    {
+        return true;
+    }
+    
+    protected function cacheFileName()
+    {
+        return config('sushi.cache-prefix', 'sushi').'-'.-my-role-database.'.sqlite'; 
+    }
+}
+```
+The above will create the sqlite database file as `storage_path('framework/cache/my-prefix--my-role-database.sqlite')`
+
+**Important**: If you are using more than one sushi model, your cache file names should be unique to ensure that each model gets its own database.
+
+
 ### Handling Empty Datasets
 Sushi reads the first row in your dataset to work out the scheme of the SQLite table. If you are using `getRows()` and this returns an empty array (e.g an API returns nothing back) then Sushi would throw an error.
 
