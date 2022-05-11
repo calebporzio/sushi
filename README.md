@@ -241,7 +241,7 @@ class Role extends Model
     }
 }
 ```
-The above will create the sqlite database file as `storage_path('framework/cache/my-prefix--my-role-database.sqlite')`
+The above will create the sqlite database file as `storage_path('framework/cache/my-prefix-my-role-database.sqlite')`
 
 **Important**: If you are using more than one sushi model, your cache file names should be unique to ensure that each model gets its own database.
 
