@@ -35,12 +35,17 @@ trait Sushi
     {
         return static::$sushiConnection;
     }
+    
+    protected function cacheFileName()
+    {
+        return config('sushi.cache-prefix', 'sushi').'-'.Str::kebab(str_replace('\\', '', static::class)).'.sqlite';
+    }
 
     public static function bootSushi()
     {
         $instance = (new static);
 
-        $cacheFileName = config('sushi.cache-prefix', 'sushi').'-'.Str::kebab(str_replace('\\', '', static::class)).'.sqlite';
+        $cacheFileName = $instance->cacheFileName();
         $cacheDirectory = realpath(config('sushi.cache-path', storage_path('framework/cache')));
         $cachePath = $cacheDirectory.'/'.$cacheFileName;
         $dataPath = $instance->sushiCacheReferencePath();
