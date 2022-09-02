@@ -65,23 +65,12 @@ trait Sushi
             },
         ];
 
-        switch (true) {
-            case ! $instance->sushiShouldCache():
-                $states['no-caching-capabilities']();
-                break;
-
-            case file_exists($cachePath) && filemtime($dataPath) <= filemtime($cachePath):
-                $states['cache-file-found-and-up-to-date']();
-                break;
-
-            case file_exists($cacheDirectory) && is_writable($cacheDirectory):
-                $states['cache-file-not-found-or-stale']();
-                break;
-
-            default:
-                $states['no-caching-capabilities']();
-                break;
-        }
+        match (true) {
+            !$instance->sushiShouldCache() => $states['no-caching-capabilities'](),
+            file_exists($cachePath) && filemtime($dataPath) <= filemtime($cachePath) => $states['cache-file-found-and-up-to-date'](),
+            file_exists($cacheDirectory) && is_writable($cacheDirectory) => $states['cache-file-not-found-or-stale'](),
+            default => $states['no-caching-capabilities'](),
+        };
     }
 
     protected static function setSqliteConnection($database)
