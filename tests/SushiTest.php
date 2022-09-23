@@ -4,6 +4,7 @@ namespace Tests;
 
 use Illuminate\Database\Connectors\ConnectionFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Validator;
 use Orchestra\Testbench\TestCase;
@@ -181,6 +182,13 @@ class SushiTest extends TestCase
             ? $this->assertFalse(Validator::make(['bob' => 'ble'], ['bob' => 'exists:'.ModelWithNonStandardKeys::class])->passes())
             : $this->assertFalse(Validator::make(['bob' => 'ble'], ['bob' => 'exists:'.ModelWithNonStandardKeys::class.'.model_with_non_standard_keys'])->passes());
     }
+
+    /** @test */
+    public function it_runs_method_after_migration_when_defined()
+    {
+        $model = ModelWithAddedTableOperations::all();
+        $this->assertEquals('columnWasAdded', $model->first()->columnAdded, 'The runAfterMigrating method was not triggered.');
+    }
 }
 
 class Foo extends Model
@@ -243,6 +251,21 @@ class ModelWithCustomSchema extends Model
     protected $schema = [
         'float' => 'string',
     ];
+}
+
+class ModelWithAddedTableOperations extends Model
+{
+    use \Sushi\Sushi;
+
+    protected $rows = [[
+        'float' => 123.456,
+        'string' => 'foo',
+    ]];
+
+    protected function runAfterMigrating(Blueprint $table)
+    {
+        $table->string('columnAdded')->default('columnWasAdded');
+    }
 }
 
 class Bar extends Model

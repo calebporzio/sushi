@@ -5,6 +5,7 @@ namespace Sushi;
 use Closure;
 use Illuminate\Database\Connectors\ConnectionFactory;
 use Illuminate\Database\QueryException;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Str;
 
 trait Sushi
@@ -155,7 +156,13 @@ trait Sushi
             if ($this->usesTimestamps() && (! in_array('updated_at', array_keys($firstRow)) || ! in_array('created_at', array_keys($firstRow)))) {
                 $table->timestamps();
             }
+
+            $this->runAfterMigrating($table);
         });
+    }
+
+    protected function runAfterMigrating(BluePrint $table)
+    {
     }
 
     public function createTableWithNoData(string $tableName)
