@@ -90,7 +90,7 @@ trait Sushi
                 $states['cache-file-found-and-up-to-date']();
                 break;
 
-            case file_exists($cacheDirectory) && is_writable($cacheDirectory):
+            case file_exists($instance->cacheDirectory()) && is_writable($instance->cacheDirectory()):
                 $states['cache-file-not-found-or-stale']();
                 break;
 
