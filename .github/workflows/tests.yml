@@ -45,24 +45,32 @@ jobs:
             php: 8.1
           - laravel: 5.8.*
             php: 8.2
+          - laravel: 5.8.*
+            php: 8.3
           - laravel: 6.*
             php: 7.1
           - laravel: 6.*
             php: 8.1
           - laravel: 6.*
             php: 8.2
+          - laravel: 6.*
+            php: 8.3
           - laravel: 7.*
             php: 7.1
           - laravel: 7.*
             php: 8.1
           - laravel: 7.*
             php: 8.2
+          - laravel: 7.*
+            php: 8.3
           - laravel: 8.*
             php: 7.1
           - laravel: 8.*
             php: 7.2
           - laravel: 8.*
             php: 8.2
+          - laravel: 8.*
+            php: 8.3
           - laravel: 9.*
             php: 7.1
           - laravel: 9.*
