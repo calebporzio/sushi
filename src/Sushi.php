@@ -190,7 +190,10 @@ trait Sushi
         try {
             $schemaBuilder->create($tableName, $callback);
         } catch (QueryException $e) {
-            if (Str::contains($e->getMessage(), 'already exists (SQL: create table')) {
+            if (Str::contains($e->getMessage(), [
+                'already exists (SQL: create table',
+                sprintf('table "%s" already exists', $tableName),
+            ])) {
                 // This error can happen in rare circumstances due to a race condition.
                 // Concurrent requests may both see the necessary preconditions for
                 // the table creation, but only one can actually succeed.
