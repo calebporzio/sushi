@@ -130,7 +130,8 @@ class Products extends Model
 ```
 
 ## Advanced Usage
-When you need more flexibility, you can implement the `runAfterMigrating(BluePrint $table)` method, allowing you to customize the table after it has been created. This might be useful for adding indexes to certain columns. 
+
+When you need more flexibility, you can implement the `afterMigrate(BluePrint $table)` method, allowing you to customize the table after it has been created. This might be useful for adding indexes to certain columns.
 
 ```php
 class Products extends Model
@@ -143,7 +144,7 @@ class Products extends Model
         ['name' => 'Rake', 'price' => '9.99'],
     ];
 
-    protected function runAfterMigrating(Blueprint $table)
+    protected function afterMigrate(Blueprint $table)
     {
         $table->index('name');
     }
@@ -268,7 +269,7 @@ Sushi requires you to add two properties to your model, if it uses a string-base
 class Role extends Model
 {
     use \Sushi\Sushi;
-    
+
     public $incrementing = false;
 
     protected $keyType = 'string';
