@@ -262,7 +262,7 @@ class ModelWithAddedTableOperations extends Model
         'string' => 'foo',
     ]];
 
-    protected function runAfterMigrating(Blueprint $table)
+    protected function afterMigrate(Blueprint $table)
     {
         $table->string('columnAdded')->default('columnWasAdded');
     }

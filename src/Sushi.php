@@ -157,12 +157,13 @@ trait Sushi
                 $table->timestamps();
             }
 
-            $this->runAfterMigrating($table);
+            $this->afterMigrate($table);
         });
     }
 
-    protected function runAfterMigrating(BluePrint $table)
+    protected function afterMigrate(BluePrint $table)
     {
+       //
     }
 
     public function createTableWithNoData(string $tableName)
