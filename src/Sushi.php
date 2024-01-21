@@ -37,13 +37,29 @@ trait Sushi
         return static::$sushiConnection;
     }
 
+    protected function sushiCachePath()
+    {
+        return implode(DIRECTORY_SEPARATOR, [
+            $this->sushiCacheDirectory(),
+            $this->sushiCacheFileName(),
+        ]);
+    }
+
+    protected function sushiCacheFileName()
+    {
+        return config('sushi.cache-prefix', 'sushi').'-'.Str::kebab(str_replace('\\', '', static::class)).'.sqlite';
+    }
+
+    protected function sushiCacheDirectory()
+    {
+        return realpath(config('sushi.cache-path', storage_path('framework/cache')));
+    }
+
     public static function bootSushi()
     {
         $instance = (new static);
 
-        $cacheFileName = config('sushi.cache-prefix', 'sushi').'-'.Str::kebab(str_replace('\\', '', static::class)).'.sqlite';
-        $cacheDirectory = realpath(config('sushi.cache-path', storage_path('framework/cache')));
-        $cachePath = $cacheDirectory.'/'.$cacheFileName;
+        $cachePath = $instance->sushiCachePath();
         $dataPath = $instance->sushiCacheReferencePath();
 
         $states = [
@@ -75,7 +91,7 @@ trait Sushi
                 $states['cache-file-found-and-up-to-date']();
                 break;
 
-            case file_exists($cacheDirectory) && is_writable($cacheDirectory):
+            case file_exists($instance->sushiCacheDirectory()) && is_writable($instance->sushiCacheDirectory()):
                 $states['cache-file-not-found-or-stale']();
                 break;
 
