@@ -159,10 +159,6 @@ trait Sushi
                 $type = $schema[$column] ?? $type;
 
                 $table->{$type}($column)->nullable();
-
-                if ($column === $this->primaryKey) {
-                    $table->primary($this->primaryKey);
-                }
             }
 
             if ($this->usesTimestamps() && (! in_array('updated_at', array_keys($firstRow)) || ! in_array('created_at', array_keys($firstRow)))) {
