@@ -1,4 +1,7 @@
 /.idea/
 /vendor/
+/tests/database/database.sqlite
 .phpunit.result.cache
 composer.lock
+/tests/cache/
+.vscode/settings.json
