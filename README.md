@@ -129,6 +129,27 @@ class Products extends Model
 }
 ```
 
+## Advanced Usage
+When you need more flexibility, you can implement the `runAfterMigrating(BluePrint $table)` method, allowing you to customize the table after it has been created. This might be useful for adding indexes to certain columns. 
+
+```php
+class Products extends Model
+{
+    use \Sushi\Sushi;
+
+    protected $rows = [
+        ['name' => 'Lawn Mower', 'price' => '226.99'],
+        ['name' => 'Leaf Blower', 'price' => '134.99'],
+        ['name' => 'Rake', 'price' => '9.99'],
+    ];
+
+    protected function runAfterMigrating(Blueprint $table)
+    {
+        $table->index('name');
+    }
+}
+```
+
 ## How It Works
 Under the hood, this package creates and caches a SQLite database JUST for this model. It creates a table and populates the rows. If, for whatever reason, it can't cache a .sqlite file, it will default to using an in-memory sqlite database.
 
