@@ -11,7 +11,7 @@ use Illuminate\Support\Str;
 trait Sushi
 {
     protected static $sushiConnection;
-    protected static ?array $loadedData = null;
+    protected static $loadedData = null;
 
     public function getRows()
     {
