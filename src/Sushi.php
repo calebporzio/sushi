@@ -11,6 +11,7 @@ use Illuminate\Support\Str;
 trait Sushi
 {
     protected static $sushiConnection;
+    protected static ?array $loadedData = null;
 
     public function getRows()
     {
@@ -124,7 +125,7 @@ trait Sushi
 
     public function migrate()
     {
-        $rows = $this->getRows();
+        $rows = $this->getLoadedData() ?? $this->getRows();
         $tableName = $this->getTable();
 
         if (count($rows)) {
@@ -252,5 +253,24 @@ trait Sushi
     public function getConnectionName()
     {
         return static::class;
+    }
+
+    public static function loadData(array $rows)
+    {
+        static::clearBootedModels();
+
+        return (new static($rows))->newQuery();
+    }
+
+    public function getLoadedData(): ?array
+    {
+        return self::$loadedData;
+    }
+
+    public function setLoadedData(array $rows): void
+    {
+        if (!empty($rows)) {
+            self::$loadedData = $rows;
+        }
     }
 }

@@ -176,6 +176,37 @@ class Role extends Model
 }
 ```
 
+## Using ::loadData()
+You can also load rows dynamically (once per instance) using `loadData()` static method.
+
+1. Implement the constructor changes into your model.
+
+```php
+class Role extends Model
+{
+    use \Sushi\Sushi;
+
+    public function __construct(array $rows = [])
+    {
+        // Injects data before the contructor
+        $this->setLoadedData($rows);
+
+        parent::__construct([]);
+    }
+}
+```
+
+2. Inject the rows through static call:
+
+```php
+    // Get instance of Eloquent Builder so you can use e.g. ->where() or ->get()
+    Role::loadData([
+        ['id' => 1, 'label' => 'admin'],
+        ['id' => 2, 'label' => 'manager'],
+        ['id' => 3, 'label' => 'user'],
+    ]);
+```
+
 ### Caching ->getRows()
 
 If you choose to use your own ->getRows() method, the rows will NOT be cached between requests by default.

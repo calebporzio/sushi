@@ -24,6 +24,7 @@ class SushiTest extends TestCase
         }
 
         Foo::resetStatics();
+        FooAssorted::resetStatics();
         Bar::resetStatics();
         File::cleanDirectory($this->cachePath);
     }
@@ -31,6 +32,7 @@ class SushiTest extends TestCase
     public function tearDown(): void
     {
         Foo::resetStatics();
+        FooAssorted::resetStatics();
         Bar::resetStatics();
         File::cleanDirectory($this->cachePath);
 
@@ -43,9 +45,25 @@ class SushiTest extends TestCase
         $this->assertEquals(3, Foo::count());
         $this->assertEquals('bar', Foo::first()->foo);
         $this->assertEquals('lob', Foo::whereBob('lob')->first()->bob);
+
+        Bar::$hasBeenAccessedBefore = false;
         $this->assertEquals(2, Bar::count());
         $this->assertEquals('bar', Bar::first()->foo);
         $this->assertEquals('lob', Bar::whereBob('lob')->first()->bob);
+    }
+
+    /** @test */
+    function load_data_usage()
+    {
+        $rows = [
+            ['foo' => 'bar', 'bob' => 'lob'],
+            ['foo' => 'bar', 'bob' => 'lob'],
+            ['foo' => 'baz', 'bob' => 'law'],
+        ];
+
+        $this->assertEquals(3, FooAssorted::loadData($rows)->count());
+        $this->assertEquals('bar', FooAssorted::loadData($rows)->first()->foo);
+        $this->assertEquals('lob', FooAssorted::loadData($rows)->whereBob('lob')->first()->bob);
     }
 
     /** @test */
@@ -96,7 +114,7 @@ class SushiTest extends TestCase
 
         $this->assertTrue(file_exists($this->cachePath));
         $this->assertStringContainsString(
-            'sushi/tests/cache/sushi-tests-foo.sqlite',
+            'tests/cache/sushi-tests-foo.sqlite',
             str_replace('\\', '/', (new Foo())->getConnection()->getDatabaseName())
         );
     }
@@ -218,25 +236,37 @@ class SushiTest extends TestCase
     }
 }
 
+trait ResetTrait
+{
+    public static function resetStatics()
+    {
+        static::resolveConnection(null);
+        static::clearBootedModels();
+    }
+}
+
 class Foo extends Model
 {
     use \Sushi\Sushi;
+    use ResetTrait;
 
     protected $rows = [
         ['foo' => 'bar', 'bob' => 'lob'],
         ['foo' => 'bar', 'bob' => 'lob'],
         ['foo' => 'baz', 'bob' => 'law'],
     ];
+}
 
-    public static function resetStatics()
-    {
-        static::setSushiConnection(null);
-        static::clearBootedModels();
-    }
+class FooAssorted extends Model
+{
+    use \Sushi\Sushi;
+    use ResetTrait;
 
-    public static function setSushiConnection($connection)
+    public function __construct(array $rows = [])
     {
-        static::$sushiConnection = $connection;
+        $this->setLoadedData($rows);
+
+        parent::__construct([]);
     }
 }
 
@@ -298,6 +328,7 @@ class ModelWithAddedTableOperations extends Model
 class Bar extends Model
 {
     use \Sushi\Sushi;
+    use ResetTrait;
 
     public static $hasBeenAccessedBefore = false;
 
@@ -317,17 +348,6 @@ class Bar extends Model
                 ['foo' => 'baz', 'bob' => 'law'],
             ];
         }
-    }
-
-    public static function resetStatics()
-    {
-        static::setSushiConnection(null);
-        static::clearBootedModels();
-    }
-
-    public static function setSushiConnection($connection)
-    {
-        static::$sushiConnection = $connection;
     }
 }
 
