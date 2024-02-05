@@ -393,7 +393,9 @@ class ModelWithCasts extends Model
         'is_boolean' => 'boolean',
     ];
 
-    protected $rows = [
-        ['is_array' => [1, 2, 3], 'is_boolean' => true],
-    ];
+    protected function getRows() {
+        return [
+            ['is_array' => json_encode([1, 2, 3]), 'is_boolean' => true],
+        ];
+    }
 }
