@@ -61,15 +61,6 @@ class SushiTest extends TestCase
     }
 
     /** @test */
-    function model_with_casts()
-    {
-        $model = ModelWithCasts::first();
-
-        $this->assertTrue(is_array($model->is_array));
-        $this->assertTrue(is_bool($model->is_boolean));
-    }
-
-    /** @test */
     function model_with_custom_schema()
     {
         ModelWithCustomSchema::count();
@@ -381,19 +372,4 @@ class Ingredient extends Model
     {
         return $this->belongsTo(Maki::class);
     }
-}
-
-
-class ModelWithCasts extends Model
-{
-    use \Sushi\Sushi;
-
-    protected $casts = [
-        'is_array' => 'array',
-        'is_boolean' => 'boolean',
-    ];
-
-    protected $rows = [
-        ['is_array' => [1, 2, 3], 'is_boolean' => true],
-    ];
 }

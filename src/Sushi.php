@@ -133,16 +133,9 @@ trait Sushi
             $this->createTableWithNoData($tableName);
         }
 
-        if (count($this->casts) > 0) {
-            foreach ($rows as $row) {
-                // If $casts are present, use Eloquent's "create" instead of a plain insert so they are used and applied...
-                static::forceCreate($row);
-            }
-        } else {
-            foreach (array_chunk($rows, $this->getSushiInsertChunkSize()) ?? [] as $inserts) {
-                if (! empty($inserts)) {
-                    static::insert($inserts);
-                }
+        foreach (array_chunk($rows, $this->getSushiInsertChunkSize()) ?? [] as $inserts) {
+            if (! empty($inserts)) {
+                static::insert($inserts);
             }
         }
     }
