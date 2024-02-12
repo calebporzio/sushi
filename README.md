@@ -15,7 +15,7 @@ Learn more about **Sponsorware** at [github.com/sponsorware/docs](https://github
 
 ## Requirements
 
-It needs pdo-sqlite to be installed as your php extension to your system.
+The [`pdo-sqlite` PHP extension](https://www.php.net/manual/en/ref.pdo-sqlite.php) must be installed on your system to use this package.
 
 ## Install
 ```
