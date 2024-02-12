@@ -12,6 +12,11 @@ Enjoy, and thanks for the support! ❤️
 
 Learn more about **Sponsorware** at [github.com/sponsorware/docs](https://github.com/sponsorware/docs) 💰.
 
+
+## Requirements
+
+The [`pdo-sqlite` PHP extension](https://www.php.net/manual/en/ref.pdo-sqlite.php) must be installed on your system to use this package.
+
 ## Install
 ```
 composer require calebporzio/sushi
