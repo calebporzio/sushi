@@ -67,13 +67,7 @@ trait Sushi
                 static::setSqliteConnection($cachePath);
             },
             'cache-file-not-found-or-stale' => function () use ($cachePath, $dataPath, $instance) {
-                file_put_contents($cachePath, '');
-
-                static::setSqliteConnection($cachePath);
-
-                $instance->migrate();
-
-                touch($cachePath, filemtime($dataPath));
+                static::cacheFileNotFoundOrStale($cachePath, $dataPath, $instance);
             },
             'no-caching-capabilities' => function () use ($instance) {
                 static::setSqliteConnection(':memory:');
@@ -99,6 +93,17 @@ trait Sushi
                 $states['no-caching-capabilities']();
                 break;
         }
+    }
+
+    protected static function cacheFileNotFoundOrStale($cachePath, $dataPath, $instance)
+    {
+        file_put_contents($cachePath, '');
+
+        static::setSqliteConnection($cachePath);
+
+        $instance->migrate();
+
+        touch($cachePath, filemtime($dataPath));
     }
 
     protected function newRelatedInstance($class)
