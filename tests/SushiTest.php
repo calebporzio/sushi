@@ -141,15 +141,6 @@ class SushiTest extends TestCase
         $this->markTestSkipped("I can't find a good way to test this right now.");
     }
 
-    /**
-     * @test
-     * @group skipped
-     * */
-    function use_same_cache_between_requests()
-    {
-        $this->markTestSkipped("I can't find a good way to test this right now.");
-    }
-
     /** @test */
     function adds_primary_key_if_needed()
     {
