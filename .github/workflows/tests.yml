@@ -17,7 +17,7 @@ jobs:
         laravel: [5.8.*, 6.*, 7.*, 8.*, 9.*, 10.*, 11.*, 12.*]
         os: [ubuntu-latest]
         include:
-          - laravel: 11.*
+          - laravel: 12.*
             testbench: 10.*
             dbal: 3.*
           - laravel: 11.*
