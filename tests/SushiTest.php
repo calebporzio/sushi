@@ -188,7 +188,7 @@ class SushiTest extends TestCase
      * */
     function sushi_models_can_relate_to_models_in_regular_sqlite_databases()
     {
-        if (trait_exists(HandlesAnnotations::class)) {
+        if (! trait_exists(HandlesAnnotations::class)) {
             $this->markTestSkipped('Requires HandlesAnnotation trait to define sqlite connection using PHPUnit annotation');
         }
 
