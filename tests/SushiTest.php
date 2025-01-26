@@ -71,9 +71,12 @@ class SushiTest extends TestCase
     {
         ModelWithCustomSchema::count();
         $connectionBuilder = ModelWithCustomSchema::resolveConnection()->getSchemaBuilder();
-        $this->assertEquals('string', $connectionBuilder->getColumnType('model_with_custom_schemas', 'float'));
-        $this->assertEquals(    
-            function_exists(laravel_version_compare::class) && laravel_version_compare('12.0.0', '>=') ? 'varchar' : 'string', 
+        $this->assertEquals(
+            function_exists(laravel_version_compare::class) && laravel_version_compare('11.0.0', '>=') ? 'varchar' : 'string', 
+            $connectionBuilder->getColumnType('model_with_custom_schemas', 'float')
+        );
+        $this->assertEquals(
+            function_exists(laravel_version_compare::class) && laravel_version_compare('11.0.0', '>=') ? 'varchar' : 'string',
             $connectionBuilder->getColumnType('model_with_custom_schemas', 'string')
         );
     }
