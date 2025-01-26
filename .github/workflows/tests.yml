@@ -18,6 +18,9 @@ jobs:
         os: [ubuntu-latest]
         include:
           - laravel: 11.*
+            testbench: 10.*
+            dbal: 3.*
+          - laravel: 11.*
             testbench: 9.*
             dbal: 3.*
           - laravel: 10.*
