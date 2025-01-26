@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Validator;
+use Orchestra\Testbench\Concerns\HandlesAnnotations;
 use Orchestra\Testbench\TestCase;
 
 class SushiTest extends TestCase
@@ -187,6 +188,10 @@ class SushiTest extends TestCase
      * */
     function sushi_models_can_relate_to_models_in_regular_sqlite_databases()
     {
+        if (trait_exists(HandlesAnnotations::class)) {
+            $this->markTestSkipped('Requires HandlesAnnotation trait to define sqlite connection using PHPUnit annotation');
+        }
+
         $this->loadMigrationsFrom(__DIR__ . '/database/migrations');
         $this->artisan('migrate', ['--database' => 'testbench-sqlite'])->run();
 
