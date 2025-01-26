@@ -133,7 +133,7 @@ jobs:
       - name: Install dependencies
         run: |
           composer require "doctrine/dbal:${{ matrix.dbal }}" --dev --no-interaction --no-update
-          composer update --prefer-dist --no-interaction --no-suggest --with="orchestra/testbench:${{ matrix.testbench }}" --with="illuminate/contracts:${{ matrix.laravel }}"
+          composer update --prefer-dist --no-interaction --no-suggest --with="orchestra/testbench:${{ matrix.testbench }}" --with="illuminate/support:${{ matrix.laravel }}"
 
       - name: Installed dependencies
         run: composer show -D
