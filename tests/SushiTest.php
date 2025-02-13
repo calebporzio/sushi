@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Validator;
 use Orchestra\Testbench\TestCase;
 
+use function Orchestra\Testbench\laravel_version_compare;
+
 class SushiTest extends TestCase
 {
     public $cachePath;
@@ -56,7 +58,10 @@ class SushiTest extends TestCase
         $this->assertEquals('integer', $connectionBuilder->getColumnType('model_with_varying_type_columns', 'int'));
         $this->assertEquals('float', $connectionBuilder->getColumnType('model_with_varying_type_columns', 'float'));
         $this->assertEquals('datetime', $connectionBuilder->getColumnType('model_with_varying_type_columns', 'dateTime'));
-        $this->assertEquals('string', $connectionBuilder->getColumnType('model_with_varying_type_columns', 'string'));
+        $this->assertEquals(
+            function_exists('\Orchestra\Testbench\laravel_version_compare') && laravel_version_compare('11.0.0', '>=') ? 'varchar' : 'string', 
+            $connectionBuilder->getColumnType('model_with_varying_type_columns', 'string')
+        );
         $this->assertEquals(null, $row->null);
     }
 
@@ -65,8 +70,14 @@ class SushiTest extends TestCase
     {
         ModelWithCustomSchema::count();
         $connectionBuilder = ModelWithCustomSchema::resolveConnection()->getSchemaBuilder();
-        $this->assertEquals('string', $connectionBuilder->getColumnType('model_with_custom_schemas', 'float'));
-        $this->assertEquals('string', $connectionBuilder->getColumnType('model_with_custom_schemas', 'string'));
+        $this->assertEquals(
+            function_exists('\Orchestra\Testbench\laravel_version_compare') && laravel_version_compare('11.0.0', '>=') ? 'varchar' : 'string', 
+            $connectionBuilder->getColumnType('model_with_custom_schemas', 'float')
+        );
+        $this->assertEquals(
+            function_exists('\Orchestra\Testbench\laravel_version_compare') && laravel_version_compare('11.0.0', '>=') ? 'varchar' : 'string',
+            $connectionBuilder->getColumnType('model_with_custom_schemas', 'string')
+        );
     }
 
     /** @test */
@@ -187,6 +198,10 @@ class SushiTest extends TestCase
      * */
     function sushi_models_can_relate_to_models_in_regular_sqlite_databases()
     {
+        if (! trait_exists('\Orchestra\Testbench\Concerns\HandlesAnnotations')) {
+            $this->markTestSkipped('Requires HandlesAnnotation trait to define sqlite connection using PHPUnit annotation');
+        }
+
         $this->loadMigrationsFrom(__DIR__ . '/database/migrations');
         $this->artisan('migrate', ['--database' => 'testbench-sqlite'])->run();
 
