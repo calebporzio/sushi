@@ -133,7 +133,7 @@ trait Sushi
         $tableName = $this->getTable();
 
         if (count($rows)) {
-            $this->createTable($tableName, $rows[0]);
+            $this->createTable($tableName, array_values($rows)[0]);
         } else {
             $this->createTableWithNoData($tableName);
         }
