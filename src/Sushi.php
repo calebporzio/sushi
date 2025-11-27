@@ -36,13 +36,17 @@ trait Sushi
 
     public static function resolveConnection($connection = null)
     {
-        $requestId = static::getCurrentRequestId();
+        $shouldCheckRequestId = config('sushi.refresh-on-request', false);
+        
+        if ($shouldCheckRequestId) {
+            $requestId = static::getCurrentRequestId();
 
-        // If request changed OR never booted, reset & boot
-        if (static::$currentRequestId !== $requestId || static::$sushiConnection === null) {
-            static::$currentRequestId = $requestId;
-            static::$sushiConnection = null;
-            static::bootSushi();
+            // If request changed OR never booted, reset & boot
+            if (static::$currentRequestId !== $requestId || static::$sushiConnection === null) {
+                static::$currentRequestId = $requestId;
+                static::$sushiConnection = null;
+                static::bootSushi();
+            }
         }
 
         return static::$sushiConnection;
