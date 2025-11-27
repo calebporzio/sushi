@@ -34,9 +34,15 @@ trait Sushi
         return property_exists(static::class, 'rows');
     }
 
+    protected function shouldRefreshDataOnEachRequest()
+    {
+        return false;
+    }
+
     public static function resolveConnection($connection = null)
     {
-        $shouldCheckRequestId = config('sushi.refresh-on-request', false);
+        $instance = new static;
+        $shouldCheckRequestId = $instance->shouldRefreshDataOnEachRequest();
         
         if ($shouldCheckRequestId) {
             $requestId = static::getCurrentRequestId();
