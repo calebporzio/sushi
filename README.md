@@ -287,6 +287,46 @@ class Role extends Model
 }
 ```
 
+## Configuration
+
+Sushi supports several configuration options:
+
+### Refresh on Request
+
+When using Laravel Octane (or other long-running server implementations), Sushi boots and migrates the data once and reuses it across requests by default for optimal performance. If your data can change between requests and you need Sushi to re-run the boot and migration process to fetch fresh data for each request, you can enable this option per model by overriding the `shouldRefreshDataOnEachRequest` method:
+
+```php
+class Role extends Model
+{
+    use \Sushi\Sushi;
+
+    public function getRows()
+    {
+        // Fetch fresh data from external source
+        return api()->getRoles();
+    }
+
+    protected function shouldRefreshDataOnEachRequest()
+    {
+        return true; // Default: false
+    }
+}
+```
+
+> Note: This option is primarily useful when running Laravel Octane and your data source (e.g., `getRows()` implementation) changes between requests and you need fresh data on each request.
+
+### Cache Configuration
+
+You can customize where Sushi stores its cache files and the cache file prefix in your config file (typically `config/sushi.php`):
+
+```php
+// config/sushi.php
+return [
+    'cache-path' => storage_path('framework/cache'), // Default cache directory
+    'cache-prefix' => 'sushi', // Default cache file prefix
+];
+```
+
 ### Troubleshoot
 
 **ERROR:** `SQLSTATE[HY000]: General error: 1 too many SQL variables`

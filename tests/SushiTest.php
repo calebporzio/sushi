@@ -25,6 +25,7 @@ class SushiTest extends TestCase
             mkdir($this->cachePath, 0777, true);
         }
 
+        Bar::$hasBeenAccessedBefore = false;
         Foo::resetStatics();
         Bar::resetStatics();
         File::cleanDirectory($this->cachePath);
@@ -107,7 +108,7 @@ class SushiTest extends TestCase
 
         $this->assertTrue(file_exists($this->cachePath));
         $this->assertStringContainsString(
-            'sushi/tests/cache/sushi-tests-foo.sqlite',
+            'tests/cache/sushi-tests-foo.sqlite',
             str_replace('\\', '/', (new Foo())->getConnection()->getDatabaseName())
         );
     }
@@ -236,7 +237,9 @@ class Foo extends Model
 
     public static function resetStatics()
     {
-        static::setSushiConnection(null);
+        static::$sushiConnection = null;
+        static::$currentRequestId = null;
+        static::$fallbackRequestId = null;
         static::clearBootedModels();
     }
 
@@ -327,7 +330,9 @@ class Bar extends Model
 
     public static function resetStatics()
     {
-        static::setSushiConnection(null);
+        static::$sushiConnection = null;
+        static::$currentRequestId = null;
+        static::$fallbackRequestId = null;
         static::clearBootedModels();
     }
 

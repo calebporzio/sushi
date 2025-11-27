@@ -11,6 +11,8 @@ use Illuminate\Support\Str;
 trait Sushi
 {
     protected static $sushiConnection;
+    protected static $currentRequestId;
+    protected static $fallbackRequestId;
 
     public function getRows()
     {
@@ -32,9 +34,42 @@ trait Sushi
         return property_exists(static::class, 'rows');
     }
 
+    protected function shouldRefreshDataOnEachRequest()
+    {
+        return false;
+    }
+
     public static function resolveConnection($connection = null)
     {
+        $instance = new static;
+        $shouldCheckRequestId = $instance->shouldRefreshDataOnEachRequest();
+        
+        if ($shouldCheckRequestId) {
+            $requestId = static::getCurrentRequestId();
+
+            // If request changed OR never booted, reset & boot
+            if (static::$currentRequestId !== $requestId || static::$sushiConnection === null) {
+                static::$currentRequestId = $requestId;
+                static::$sushiConnection = null;
+                static::bootSushi();
+            }
+        }
+
         return static::$sushiConnection;
+    }
+
+    protected static function getCurrentRequestId(): string
+    {
+        if (function_exists('app') && app()->bound('request')) {
+            $request = app('request');
+            return spl_object_hash($request);
+        }
+
+        if (static::$fallbackRequestId === null) {
+            static::$fallbackRequestId = (string) ($_SERVER['REQUEST_TIME_FLOAT'] ?? microtime(true));
+        }
+
+        return static::$fallbackRequestId;
     }
 
     protected function sushiCachePath()
@@ -57,6 +92,9 @@ trait Sushi
 
     public static function bootSushi()
     {
+        // Set current request ID to prevent re-booting during migration
+        static::$currentRequestId = static::getCurrentRequestId();
+
         $instance = (new static);
 
         $cachePath = $instance->sushiCachePath();
