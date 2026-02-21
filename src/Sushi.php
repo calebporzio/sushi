@@ -66,7 +66,7 @@ trait Sushi
         // we call it directly since there is no re-entrancy guard and the
         // original behaviour works fine.
         if (method_exists(static::class, 'whenBooted')) {
-            static::whenBooted(fn () => static::configureSushiConnection());
+            static::whenBooted(function () { static::configureSushiConnection(); });
         } else {
             static::configureSushiConnection();
         }
