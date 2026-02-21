@@ -57,7 +57,7 @@ trait Sushi
 
     public static function bootSushi()
     {
-        $instance = (new static);
+        $instance = (new \ReflectionClass(static::class))->newInstanceWithoutConstructor();
 
         $cachePath = $instance->sushiCachePath();
         $dataPath = $instance->sushiCacheReferencePath();
