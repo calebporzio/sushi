@@ -57,7 +57,24 @@ trait Sushi
 
     public static function bootSushi()
     {
-        $instance = (new \ReflectionClass(static::class))->newInstanceWithoutConstructor();
+        // Laravel 13 (laravel/framework#55685) throws a LogicException if a new
+        // model instance is created while the model is still booting (i.e.
+        // during a boot* trait method). Since Sushi needs to create an instance
+        // to configure its SQLite connection, we defer that work until after
+        // booting has finished using the "whenBooted" method, which was added
+        // in Laravel 12.8 (laravel/framework#55286). For older Laravel versions
+        // we call it directly since there is no re-entrancy guard and the
+        // original behaviour works fine.
+        if (method_exists(static::class, 'whenBooted')) {
+            static::whenBooted(fn () => static::configureSushiConnection());
+        } else {
+            static::configureSushiConnection();
+        }
+    }
+
+    protected static function configureSushiConnection()
+    {
+        $instance = new static;
 
         $cachePath = $instance->sushiCachePath();
         $dataPath = $instance->sushiCacheReferencePath();
