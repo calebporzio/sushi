@@ -39,8 +39,7 @@ class SushiTest extends TestCase
         parent::tearDown();
     }
 
-    /** @test */
-    function basic_usage()
+    function test_basic_usage()
     {
         $this->assertEquals(3, Foo::count());
         $this->assertEquals('bar', Foo::first()->foo);
@@ -50,8 +49,7 @@ class SushiTest extends TestCase
         $this->assertEquals('lob', Bar::whereBob('lob')->first()->bob);
     }
 
-    /** @test */
-    function columns_with_varying_types()
+    function test_columns_with_varying_types()
     {
         $row = ModelWithVaryingTypeColumns::first();
         $connectionBuilder = ModelWithVaryingTypeColumns::resolveConnection()->getSchemaBuilder();
@@ -65,8 +63,7 @@ class SushiTest extends TestCase
         $this->assertEquals(null, $row->null);
     }
 
-    /** @test */
-    function model_with_custom_schema()
+    function test_model_with_custom_schema()
     {
         ModelWithCustomSchema::count();
         $connectionBuilder = ModelWithCustomSchema::resolveConnection()->getSchemaBuilder();
@@ -80,8 +77,7 @@ class SushiTest extends TestCase
         );
     }
 
-    /** @test */
-    function models_using_the_get_rows_property_arent_cached()
+    function test_models_using_the_get_rows_property_arent_cached()
     {
         Bar::$hasBeenAccessedBefore = false;
         $this->assertEquals(2, Bar::count());
@@ -89,8 +85,7 @@ class SushiTest extends TestCase
         $this->assertEquals(3, Bar::count());
     }
 
-    /** @test */
-    function uses_in_memory_if_the_cache_directory_is_not_writeable_or_not_found()
+    function test_uses_in_memory_if_the_cache_directory_is_not_writeable_or_not_found()
     {
         config(['sushi.cache-path' => $path = __DIR__ . '/non-existant-path']);
 
@@ -100,8 +95,7 @@ class SushiTest extends TestCase
         $this->assertEquals(':memory:', (new Foo)->getConnection()->getDatabaseName());
     }
 
-    /** @test */
-    function caches_sqlite_file_if_storage_cache_folder_is_available()
+    function test_caches_sqlite_file_if_storage_cache_folder_is_available()
     {
         Foo::count();
 
@@ -112,8 +106,7 @@ class SushiTest extends TestCase
         );
     }
 
-    /** @test */
-    function avoids_error_when_creating_database_concurrently()
+    function test_avoids_error_when_creating_database_concurrently()
     {
         $actualFactory = app(ConnectionFactory::class);
         $actualConnection = $actualFactory->make([
@@ -144,30 +137,26 @@ class SushiTest extends TestCase
     }
 
     /**
-     * @test
      * @group skipped
-     * */
-    function uses_same_cache_between_requests()
+     */
+    function test_uses_same_cache_between_requests()
     {
         $this->markTestSkipped("I can't find a good way to test this right now.");
     }
 
-    /** @test */
-    function adds_primary_key_if_needed()
+    function test_adds_primary_key_if_needed()
     {
         $this->assertEquals([5,6], ModelWithNonStandardKeys::orderBy('id')->pluck('id')->toArray());
         $this->assertEquals(1, Foo::find(1)->getKey());
     }
 
 
-    /** @test */
-    function it_returns_an_empty_collection()
+    function test_it_returns_an_empty_collection()
     {
         $this->assertEquals(0, Blank::count());
     }
 
-    /** @test */
-    function can_use_exists_validation_rule()
+    function test_can_use_exists_validation_rule()
     {
         ModelWithNonStandardKeys::all();
         Foo::all();
@@ -185,22 +174,15 @@ class SushiTest extends TestCase
             : $this->assertFalse(Validator::make(['bob' => 'ble'], ['bob' => 'exists:'.ModelWithNonStandardKeys::class.'.model_with_non_standard_keys'])->passes());
     }
 
-    /** @test */
-    public function it_runs_method_after_migration_when_defined()
+    public function test_it_runs_method_after_migration_when_defined()
     {
         $model = ModelWithAddedTableOperations::all();
         $this->assertEquals('columnWasAdded', $model->first()->columnAdded, 'The runAfterMigrating method was not triggered.');
     }
 
-    /**
-     * @test
-     * @define-env usesSqliteConnection
-     * */
-    function sushi_models_can_relate_to_models_in_regular_sqlite_databases()
+    function test_sushi_models_can_relate_to_models_in_regular_sqlite_databases()
     {
-        if (! trait_exists('\Orchestra\Testbench\Concerns\HandlesAnnotations')) {
-            $this->markTestSkipped('Requires HandlesAnnotation trait to define sqlite connection using PHPUnit annotation');
-        }
+        $this->usesSqliteConnection($this->app);
 
         $this->loadMigrationsFrom(__DIR__ . '/database/migrations');
         $this->artisan('migrate', ['--database' => 'testbench-sqlite'])->run();
