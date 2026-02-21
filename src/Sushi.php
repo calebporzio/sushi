@@ -168,8 +168,8 @@ trait Sushi
     {
         $this->createTableSafely($tableName, function ($table) use ($firstRow) {
             // Add the "id" column if it doesn't already exist in the rows.
-            if ($this->incrementing && ! array_key_exists($this->primaryKey, $firstRow)) {
-                $table->increments($this->primaryKey);
+            if ($this->getIncrementing() && ! array_key_exists($this->getKeyName(), $firstRow)) {
+                $table->increments($this->getKeyName());
             }
 
             foreach ($firstRow as $column => $value) {
@@ -190,8 +190,8 @@ trait Sushi
                         $type = 'string';
                 }
 
-                if ($column === $this->primaryKey && $type == 'integer') {
-                    $table->increments($this->primaryKey);
+                if ($column === $this->getKeyName() && $type == 'integer') {
+                    $table->increments($this->getKeyName());
                     continue;
                 }
 
@@ -220,13 +220,13 @@ trait Sushi
         $this->createTableSafely($tableName, function ($table) {
             $schema = $this->getSchema();
 
-            if ($this->incrementing && ! in_array($this->primaryKey, array_keys($schema))) {
-                $table->increments($this->primaryKey);
+            if ($this->getIncrementing() && ! in_array($this->getKeyName(), array_keys($schema))) {
+                $table->increments($this->getKeyName());
             }
 
             foreach ($schema as $name => $type) {
-                if ($name === $this->primaryKey && $type == 'integer') {
-                    $table->increments($this->primaryKey);
+                if ($name === $this->getKeyName() && $type == 'integer') {
+                    $table->increments($this->getKeyName());
                     continue;
                 }
 
