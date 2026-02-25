@@ -100,7 +100,7 @@ trait Sushi
                 $states['no-caching-capabilities']();
                 break;
 
-            case file_exists($cachePath) && filemtime($dataPath) <= filemtime($cachePath):
+            case file_exists($cachePath) && filesize($cachePath) > 0 && filemtime($dataPath) <= filemtime($cachePath):
                 $states['cache-file-found-and-up-to-date']();
                 break;
 
@@ -116,13 +116,24 @@ trait Sushi
 
     protected static function cacheFileNotFoundOrStale($cachePath, $dataPath, $instance)
     {
-        file_put_contents($cachePath, '');
+        $tempPath = $cachePath.'.tmp.'.str_replace('.', '', uniqid('', true));
 
-        static::setSqliteConnection($cachePath);
+        try {
+            file_put_contents($tempPath, '');
 
-        $instance->migrate();
+            static::setSqliteConnection($tempPath);
 
-        touch($cachePath, filemtime($dataPath));
+            $instance->migrate();
+
+            touch($tempPath, filemtime($dataPath));
+            rename($tempPath, $cachePath);
+
+            static::setSqliteConnection($cachePath);
+        } finally {
+            if (file_exists($tempPath)) {
+                @unlink($tempPath);
+            }
+        }
     }
 
     protected function newRelatedInstance($class)

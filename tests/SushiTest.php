@@ -106,6 +106,20 @@ class SushiTest extends TestCase
         );
     }
 
+    function test_rebuilds_empty_cache_file_even_when_its_timestamp_is_fresh()
+    {
+        $cachePath = $this->cachePath.'/sushi-tests-foo.sqlite';
+        $referencePath = (new \ReflectionClass(Foo::class))->getFileName();
+
+        file_put_contents($cachePath, '');
+        touch($cachePath, filemtime($referencePath) + 10);
+
+        Foo::resetStatics();
+
+        $this->assertEquals(3, Foo::count());
+        $this->assertGreaterThan(0, filesize($cachePath));
+    }
+
     function test_avoids_error_when_creating_database_concurrently()
     {
         $actualFactory = app(ConnectionFactory::class);
@@ -115,15 +129,17 @@ class SushiTest extends TestCase
         ]);
 
         $connectionFactory = $this->createMock(ConnectionFactory::class);
-        $connectionFactory->expects($this->once())
+        $connectionFactory->expects($this->atLeastOnce())
             ->method('make')
             ->willReturnCallback(function () use ($actualConnection) {
                 // Simulate a concurrent request that creates the table at a point in time
                 // where our main execution has already determined that it does not exist
                 // and is about to create it.
-                $actualConnection->getSchemaBuilder()->create('blanks', function ($table) {
-                    $table->increments('id');
-                });
+                if (! $actualConnection->getSchemaBuilder()->hasTable('blanks')) {
+                    $actualConnection->getSchemaBuilder()->create('blanks', function ($table) {
+                        $table->increments('id');
+                    });
+                }
 
                 return $actualConnection;
             });
