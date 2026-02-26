@@ -27,6 +27,7 @@ class SushiTest extends TestCase
 
         Foo::resetStatics();
         Bar::resetStatics();
+        Bar::$hasBeenAccessedBefore = false;
         File::cleanDirectory($this->cachePath);
     }
 
@@ -193,6 +194,35 @@ class SushiTest extends TestCase
         $this->assertCount(2, $californiaMaki->ingredients);
     }
 
+    function test_model_with_refresh_reruns_get_rows_after_connection_is_cleared()
+    {
+        OctaneRefreshModel::resetStatics();
+
+        $firstCount = OctaneRefreshModel::count(); // getRows runs once → 1 row
+
+        // Simulate what Octane's RequestReceived event does
+        OctaneRefreshModel::clearSushiConnection();
+
+        $secondCount = OctaneRefreshModel::count(); // getRows runs again → 2 rows
+
+        $this->assertGreaterThan($firstCount, $secondCount);
+        $this->assertEquals(2, OctaneRefreshModel::$callCount);
+    }
+
+    function test_model_without_refresh_does_not_rerun_get_rows_on_new_request()
+    {
+        // Bar has shouldRefreshDataOnEachRequest() = false (default)
+        Bar::$hasBeenAccessedBefore = false;
+        Bar::resetStatics();
+
+        Bar::count(); // boot + getRows runs (2 rows: hasBeenAccessedBefore is now true)
+
+        // Simulate a new Octane request — Bar should not refresh
+        $count = Bar::count(); // same connection, same data
+
+        $this->assertEquals(2, $count);
+    }
+
     protected function usesSqliteConnection($app)
     {
         file_put_contents(__DIR__ . '/database/database.sqlite', '');
@@ -219,6 +249,7 @@ class Foo extends Model
     public static function resetStatics()
     {
         static::setSushiConnection(null);
+        static::$sushiOctaneListenerRegistered = false;
         static::clearBootedModels();
     }
 
@@ -310,6 +341,7 @@ class Bar extends Model
     public static function resetStatics()
     {
         static::setSushiConnection(null);
+        static::$sushiOctaneListenerRegistered = false;
         static::clearBootedModels();
     }
 
@@ -359,5 +391,30 @@ class Ingredient extends Model
     public function maki()
     {
         return $this->belongsTo(Maki::class);
+    }
+}
+
+class OctaneRefreshModel extends Model
+{
+    use \Sushi\Sushi;
+
+    public static int $callCount = 0;
+
+    public function getRows(): array
+    {
+        return array_fill(0, ++static::$callCount, ['name' => 'row']);
+    }
+
+    protected static function shouldRefreshDataOnEachRequest(): bool
+    {
+        return true;
+    }
+
+    public static function resetStatics(): void
+    {
+        static::$sushiConnection = null;
+        static::$sushiOctaneListenerRegistered = false;
+        static::$callCount = 0;
+        static::clearBootedModels();
     }
 }
