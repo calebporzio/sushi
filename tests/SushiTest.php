@@ -209,18 +209,16 @@ class SushiTest extends TestCase
         $this->assertEquals(2, OctaneRefreshModel::$callCount);
     }
 
-    function test_model_without_refresh_does_not_rerun_get_rows_on_new_request()
+    function test_model_without_refresh_does_not_register_octane_listener()
     {
         // Bar has shouldRefreshDataOnEachRequest() = false (default)
         Bar::$hasBeenAccessedBefore = false;
         Bar::resetStatics();
 
-        Bar::count(); // boot + getRows runs (2 rows: hasBeenAccessedBefore is now true)
+        Bar::count(); // triggers boot → registerOctaneRefreshListener() returns early
 
-        // Simulate a new Octane request — Bar should not refresh
-        $count = Bar::count(); // same connection, same data
-
-        $this->assertEquals(2, $count);
+        $prop = (new \ReflectionClass(Bar::class))->getProperty('sushiOctaneListenerRegistered');
+        $this->assertFalse($prop->getValue());
     }
 
     protected function usesSqliteConnection($app)
@@ -398,7 +396,7 @@ class OctaneRefreshModel extends Model
 {
     use \Sushi\Sushi;
 
-    public static int $callCount = 0;
+    public static $callCount = 0;
 
     public function getRows(): array
     {
