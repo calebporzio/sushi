@@ -11,6 +11,7 @@ use Illuminate\Support\Str;
 trait Sushi
 {
     protected static $sushiConnection;
+    protected static $sushiOctaneListenerRegistered = false;
 
     public function getRows()
     {
@@ -32,8 +33,17 @@ trait Sushi
         return property_exists(static::class, 'rows');
     }
 
+    protected static function shouldRefreshDataOnEachRequest(): bool
+    {
+        return false;
+    }
+
     public static function resolveConnection($connection = null)
     {
+        if (static::$sushiConnection === null && static::shouldRefreshDataOnEachRequest()) {
+            static::configureSushiConnection();
+        }
+
         return static::$sushiConnection;
     }
 
@@ -68,10 +78,43 @@ trait Sushi
         if (method_exists(static::class, 'whenBooted')) {
             static::whenBooted(function () {
                 static::configureSushiConnection();
+                static::registerOctaneRefreshListener();
             });
         } else {
             static::configureSushiConnection();
+            static::registerOctaneRefreshListener();
         }
+    }
+
+    protected static function registerOctaneRefreshListener(): void
+    {
+        if (! static::shouldRefreshDataOnEachRequest()) {
+            return;
+        }
+
+        if (static::$sushiOctaneListenerRegistered) {
+            return;
+        }
+
+        if (! class_exists('Laravel\Octane\Events\RequestReceived')) {
+            return;
+        }
+
+        $class = static::class;
+
+        app('events')->listen(
+            \Laravel\Octane\Events\RequestReceived::class,
+            static function () use ($class) {
+                $class::clearSushiConnection();
+            }
+        );
+
+        static::$sushiOctaneListenerRegistered = true;
+    }
+
+    public static function clearSushiConnection(): void
+    {
+        static::$sushiConnection = null;
     }
 
     protected static function configureSushiConnection()

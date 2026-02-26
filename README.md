@@ -181,6 +181,33 @@ class Role extends Model
 }
 ```
 
+### Refreshing Data on Each Request (Laravel Octane)
+
+When running under [Laravel Octane](https://laravel.com/docs/octane), the application process is kept alive between requests. By default, Sushi configures its SQLite connection once per process and reuses it for subsequent requests — which is usually desirable.
+
+If you need `getRows()` to be called again on every new request (for example, when your rows are sourced from a dynamic, per-request data source), you can override `shouldRefreshDataOnEachRequest()`:
+
+```php
+class LiveSettings extends Model
+{
+    use \Sushi\Sushi;
+
+    public function getRows(): array
+    {
+        return cache()->get('live-settings', []);
+    }
+
+    protected static function shouldRefreshDataOnEachRequest(): bool
+    {
+        return true;
+    }
+}
+```
+
+With this enabled, Sushi will detect when a new HTTP request starts (via the Laravel request object) and automatically re-run `getRows()`, rebuilding the in-memory SQLite table for that request.
+
+> Note: This has no effect outside of Octane (i.e. traditional FPM deployments), since each request already starts a fresh process.
+
 ### Caching ->getRows()
 
 If you choose to use your own ->getRows() method, the rows will NOT be cached between requests by default.
